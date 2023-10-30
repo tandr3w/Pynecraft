@@ -6,8 +6,7 @@ class Shader():
         self.shaders = {}
 
         self.shaders["quad"] = self.get_shader("default")
-
-
+        self.shaders["chunk"] = self.get_shader("default")
 
     def get_shader(self, shader_name):
         with open(f"shaders/{shader_name}.vert") as f:

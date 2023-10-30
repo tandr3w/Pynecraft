@@ -1,0 +1,2 @@
+CHUNK_SIZE = 16
+TPS = 40

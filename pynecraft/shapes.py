@@ -13,12 +13,14 @@ class BaseShape:
         # Each shape type only needs one VBO because the vertices will be the same, only transformations (shader vars) differ. You just have to bind it to use it.
         # Each shape type only needs one VAO and shader as well, you just have to do a cmd while drawing to use them.
 
-        self.vbo = self.app.VBO_obj.vbos[name]
-        self.vao = self.app.VBO_obj.vaos[name]
+        self.vbo = self.get_vbo()
+        self.vao = self.get_vao()
         self.shader = self.app.shader.shaders[name]
 
         self.model_matrix = self.get_model_matrix()
 
+    def get_vbo(self): ...
+    def get_vao(self): ...
 
     def get_model_matrix(self): # The actual transformations of the shape
         model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
@@ -52,3 +54,31 @@ class Quad(BaseShape):
     def __init__(self, app, position, eulers):
         super().__init__(app=app, position=position, eulers=eulers, name="quad")
         self.vertex_count = 6
+
+    def get_vertex_data(self):
+        vertices = (
+            0.5, 0.5, 0,
+            -0.5, 0.5, 0,
+            -0.5, -0.5, 0,
+            0.5, 0.5, 0,
+            -0.5, -0.5, 0,
+            0.5, -0.5, 0
+        )
+        
+        vertices = np.array(vertices, dtype=np.float32)
+        return vertices
+
+    def get_vbo(self):
+        vertices = self.get_vertex_data()
+        self.vbo = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
+        glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+        return self.vbo
+
+    def get_vao(self):
+        vao = glGenVertexArrays(1)
+        glBindVertexArray(vao)
+
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
+        return vao
