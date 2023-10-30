@@ -8,6 +8,7 @@ from OpenGL.GL import *
 """
 Since it would be silly to render thousands of individual blocks, they are combined into 16x16x16 chunks.
 """
+from random import randint
 class Chunk:
     def __init__(self, app, position=[0, 0, 0], eulers=[0, 0, 0]):
         self.mesh = ChunkMesh(self, app, position, eulers)
@@ -20,7 +21,7 @@ class Chunk:
         for x in range(CHUNK_SIZE):
             for y in range(CHUNK_SIZE):
                 for z in range(CHUNK_SIZE):
-                    blocks[utils.flatten_coord(x, y, z)] = 1
+                    blocks[utils.flatten_coord(x, y, z)] = randint(1, 200)
         return blocks
 
     def draw(self):
