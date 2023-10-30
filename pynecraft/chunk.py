@@ -35,7 +35,6 @@ class ChunkMesh(BaseShape):
 
     def get_vbo(self):
         vertices = build_chunk(self.chunk.get_blocks())
-
         self.vertex_count = len(vertices) // 5
         vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
@@ -47,10 +46,10 @@ class ChunkMesh(BaseShape):
         glBindVertexArray(vao)
 
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 20, ctypes.c_void_p(0))
+        glVertexAttribIPointer(0, 3, GL_UNSIGNED_BYTE, 5, ctypes.c_void_p(0))
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 20, ctypes.c_void_p(12))
+        glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, 5, ctypes.c_void_p(3))
         glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 20, ctypes.c_void_p(16))
+        glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, 5, ctypes.c_void_p(4))
         return vao
 

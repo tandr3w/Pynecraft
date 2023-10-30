@@ -1,8 +1,8 @@
 #version 330 core
 
-layout (location=0) in vec3 vertexPos;
-layout (location=1) in float block_type;
-layout (location=2) in float face_id;
+layout (location=0) in ivec3 vertexPos;
+layout (location=1) in int block_type;
+layout (location=2) in int face_id;
 
 uniform mat4 m_proj;
 uniform mat4 m_view;
@@ -18,6 +18,6 @@ vec3 hash31(float p) {
 
 void main()
 {
-    gl_Position = m_proj * m_view * m_model * vec4(vertexPos, 1.0);
+    gl_Position = m_proj * m_view * m_model * vec4(vertexPos, 1);
     block_color = normalize(hash31(block_type));
 }

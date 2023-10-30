@@ -4,7 +4,7 @@ import numpy as np
 
 def is_empty(blocks, x, y, z):
     if x >= 0 and x < CHUNK_SIZE and y >= 0 and y < CHUNK_SIZE and z >= 0 and z < CHUNK_SIZE:
-        if blocks[utils.flatten_coord(x, y, z)] == 0:
+        if not blocks[utils.flatten_coord(x, y, z)] == 0:
             return False 
     return True
 
@@ -18,7 +18,7 @@ def add_face(vertex_data, index, vertices):
     return index
 
 def build_chunk(blocks):
-    vertex_data = np.empty(CHUNK_SIZE**3 * 36 * 5, dtype=np.float32)
+    vertex_data = np.empty(CHUNK_SIZE**3 * 18 * 5, dtype="uint8")
     index = 0
 
     for x in range(CHUNK_SIZE):

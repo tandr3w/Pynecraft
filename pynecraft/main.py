@@ -1,5 +1,7 @@
 # TODO:
 # Clean up all the code
+# Fix the face draw thing
+# Figure out why the vertices don't fit in the x18 arr
 # Textures for chunks
 
 import pyglet
@@ -44,7 +46,7 @@ class Pynecraft(pyglet.window.Window):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_DEPTH_TEST);  
-        glEnable(GL_CULL_FACE);  
+        # glEnable(GL_CULL_FACE);  
 
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT)
