@@ -8,16 +8,19 @@ uniform mat4 m_proj;
 uniform mat4 m_view;
 uniform mat4 m_model;
 
-out vec3 block_color;
+out vec2 texCoord;
+flat out int faceid;
+flat out int blockid;
 
-vec3 hash31(float p) {
-    vec3 p3 = fract(vec3(p * 21.2) * vec3(0.1031, 0.1030, 0.0973));
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.xxy + p3.yyz) * p3.zyx) + 0.05;
-}
+const vec2 coords[12] = vec2[12](
+    vec2(1, 0), vec2(1, 1), vec2(0, 1), vec2(1, 0), vec2(0, 1), vec2(0, 0), // Top, Right, Back faces
+    vec2(0, 0), vec2(1, 1), vec2(0, 1), vec2(0, 0), vec2(1, 0), vec2(1, 1) // Bottom, Left, Front faces
+);
 
 void main()
 {
+    texCoord = coords[gl_VertexID % 6 + (face_id & 1) * 6];
     gl_Position = m_proj * m_view * m_model * vec4(vertexPos, 1);
-    block_color = normalize(hash31(block_type));
+    faceid = face_id;
+    blockid = block_type;
 }

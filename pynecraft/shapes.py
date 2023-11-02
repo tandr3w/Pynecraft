@@ -9,15 +9,20 @@ class BaseShape:
         self.position = np.array(position, dtype=np.float32)
         self.eulers = np.array(eulers, dtype=np.float32)
         self.vertex_count = 0
+        self.material = False
 
         # Each shape type only needs one VBO because the vertices will be the same, only transformations (shader vars) differ. You just have to bind it to use it.
         # Each shape type only needs one VAO and shader as well, you just have to do a cmd while drawing to use them.
 
-        self.vbo = self.get_vbo()
-        self.vao = self.get_vao()
+        self.vbo = None
+        self.vao = None
         self.shader = self.app.shader.shaders[name]
 
         self.model_matrix = self.get_model_matrix()
+
+    def build(self):
+        self.vbo = self.get_vbo()
+        self.vao = self.get_vao()
 
     def get_vbo(self): ...
     def get_vao(self): ...
@@ -44,6 +49,8 @@ class BaseShape:
         # VBOs are connected to the VAOs, and will automatically do so when the VAO is init'ed, which will use the currently bound VBO
         glBindVertexArray(self.vao)
         glUseProgram(self.shader)
+        if self.material:
+            self.material.use()
 
         glUniformMatrix4fv(glGetUniformLocation(self.shader, "m_proj"), 1, GL_FALSE, self.app.camera.proj_matrix)
         glUniformMatrix4fv(glGetUniformLocation(self.shader, "m_view"), 1, GL_FALSE, self.app.camera.view_matrix)
