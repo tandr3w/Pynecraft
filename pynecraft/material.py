@@ -34,7 +34,7 @@ class Material:
 
     def use(self) -> None:
         glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture)
+        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture)
 
     def destroy(self) -> None:
         glDeleteTextures(1, (self.texture,))

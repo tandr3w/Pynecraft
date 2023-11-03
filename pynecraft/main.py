@@ -1,8 +1,7 @@
 # TODO:
 
-# Pack data?
-# Get rid of pyrr since it's slow
 # Use JIT with numba to make it faster
+
 # Optimize with Frustum culling?
 # Add dynamic chunk rendering (don't render if there's a world limit)
 # Make chunks 256 tall (entire height)
@@ -12,6 +11,9 @@
 # Lighting
 # Fix collision
 # Add gravity
+# Get rid of pyrr since it's slow
+# Pack data?
+
 
 import pyglet
 from pyglet.window import key
@@ -24,6 +26,7 @@ from shapes import Quad
 from chunk import Chunk
 from shader import Shader
 from world import World
+from material import Material
 
 class Pynecraft(pyglet.window.Window):
 
@@ -41,15 +44,18 @@ class Pynecraft(pyglet.window.Window):
 
         self.world = World(self)
         self.held_keys = set()
+        self.blockMaterial = Material("gfx/tex_array_1.png", isArr=True)
 
         pyglet.clock.schedule_interval(self.update, 1 / TPS)
         super(Pynecraft, self).set_exclusive_mouse(True)
 
-        for x in range(-1, 2):
-            for z in range(-1, 2):
+        # For some reason, this part takes way longer than actually building the VBOs
+        for x in range(4):
+            for z in range(4):
                 for y in range(1, 4):
                     self.world.gen_chunk(x, y, z)
 
+        print("Chunks finished building")
         for chunk in self.world.chunks: # Build VBOs for all the chunks
             self.world.chunks[chunk].mesh.build()
         
@@ -59,7 +65,7 @@ class Pynecraft(pyglet.window.Window):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_DEPTH_TEST);  
-        # glEnable(GL_CULL_FACE);  
+        glEnable(GL_CULL_FACE);  
 
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT)

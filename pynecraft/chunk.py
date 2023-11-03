@@ -39,13 +39,13 @@ class ChunkMesh(BaseShape):
     def __init__(self, chunk, app, position, eulers):
         self.chunk = chunk
         self.vertex_count = 0
-        self.material = Material("gfx/tex_array_1.png", isArr=True)
         self.position = position
         self.blocks = self.chunk.get_blocks()
         super().__init__(app=app, position=position, eulers=eulers, name="chunk")
+        self.material = self.app.blockMaterial
 
     def get_vbo(self):
-        vertices = build_chunk(self.app.world.chunks, self.chunk.chunkPos, self.blocks)
+        vertices = build_chunk(self.app.world.numba_chunks, self.chunk.chunkPos[0], self.chunk.chunkPos[1], self.chunk.chunkPos[2], self.blocks)
         self.vertex_count = len(vertices) // 5
         vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
