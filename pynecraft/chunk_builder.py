@@ -23,6 +23,8 @@ def is_empty(world, chunkX, chunkZ, blocks, x, y, z):
     #         if world[(chunkX, chunkY - 1, chunkZ)][flatten_coord(x, CHUNK_SIZE - 1, z)]:
     #             return False
     #     return True
+    elif y < 0:
+        return True
     elif z < 0:
         if (chunkX, chunkZ - 1) in world:
             if world[(chunkX, chunkZ - 1)][flatten_coord(x, y, CHUNK_SIZE - 1)]:
@@ -38,6 +40,8 @@ def is_empty(world, chunkX, chunkZ, blocks, x, y, z):
     #         if world[(chunkX, chunkZ)][flatten_coord(x, 0, z)]:
     #             return False
     #     return True
+    elif y >= CHUNK_HEIGHT:
+        return True
     elif z >= CHUNK_SIZE:
         if (chunkX, chunkZ + 1) in world:
             if world[(chunkX, chunkZ + 1)][flatten_coord(x, y, 0)]:

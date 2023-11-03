@@ -1,6 +1,8 @@
 # TODO:
 
-# Add dynamic chunk rendering (don't render if there's a world limit)
+# Add dynamic chunk rendering
+# - Multiprocesses do not share memory, so the async functions can only return things
+# - Create a chunk provider and pass that into the async
 # Optimize with Frustum culling?
 # Swap the textures to not use that lame ass copied solution
 # Add breaking / placing blocks
@@ -46,29 +48,19 @@ class Pynecraft(pyglet.window.Window):
         pyglet.clock.schedule_interval(self.update, 1 / TPS)
         super(Pynecraft, self).set_exclusive_mouse(True)
 
-        # For some reason, this part takes way longer than actually building the VBOs
-        for x in range(-6, 8):
-            for z in range(-6, 8):
-                self.world.gen_chunk(x, z)
-
-        for chunk in self.world.chunks: # Build VBOs for all the chunks
-            self.world.chunks[chunk].mesh.build()
-
     def init_opengl(self):
         glClearColor(0.1, 0.2, 0.2, 1)
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_DEPTH_TEST);  
-        glEnable(GL_CULL_FACE);  
+        # glEnable(GL_CULL_FACE);  
 
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
         self.camera.update()
-
-        for chunk in self.world.chunks:
-            self.world.chunks[chunk].mesh.draw()
+        self.world.render_chunks(self.camera.position, isAsync=False)
 
     def on_key_press(self, symbol, modifiers):
         self.held_keys.add(symbol)        
@@ -88,5 +80,6 @@ class Pynecraft(pyglet.window.Window):
         self.camera.rotate(-dx, dy)
         self.camera.update_camera_vectors()
 
-window = Pynecraft()
-pyglet.app.run()
+if __name__ == '__main__':
+    window = Pynecraft()
+    pyglet.app.run()
