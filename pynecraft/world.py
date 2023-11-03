@@ -8,14 +8,14 @@ class World:
         self.chunks = {}
         self.numba_chunks = Dict()
 
-    def get_chunk(self, x, y, z):
-        loc = (x, y, z)
+    def get_chunk(self, x, z):
+        loc = (x, z)
         return self.chunks[loc] if loc in self.chunks else None
 
-    def gen_chunk(self, x, y, z):
-        self.chunks[(x, y, z)] = Chunk(self.app, position=[x*CHUNK_SIZE, y*CHUNK_SIZE, z*CHUNK_SIZE])
-        self.numba_chunks[(x, y, z)] = self.chunks[(x, y, z)].mesh.blocks
+    def gen_chunk(self, x, z):
+        self.chunks[(x, z)] = Chunk(self.app, position=[x*CHUNK_SIZE, 0, z*CHUNK_SIZE])
+        self.numba_chunks[(x, z)] = self.chunks[(x, z)].mesh.blocks
 
     def build_chunk(self, x, y, z):
-        if (x, y, z) in self.chunks:
-            self.chunks[(x, y, z)].mesh.build()
+        if (x, z) in self.chunks:
+            self.chunks[(x, z)].mesh.build()

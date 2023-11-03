@@ -4,13 +4,7 @@ from pyglet.window import key
 import glm
 from constants import *
 import utils
-
-FOV = 50
-NEAR = 0.1
-FAR = 100
-SPEED = 0.03
-SENSITIVITY = 0.15
-COLLISION_ZONE = 0.2
+from utils import *
 
 class Camera:
     def __init__(self, app, position=(0, 70, 0), yaw=0, pitch=0):
@@ -57,7 +51,7 @@ class Camera:
         x, y, z = position
         for c in [COLLISION_ZONE, -COLLISION_ZONE]:
             for p in ([x, y, z], [x + c, y, z], [x, y + c, z], [x, y, z+c], [x, y-1, z], [x+c, y-1, z], [x, y-1+c, z], [x, y-1, z+c]):
-                chunkPos = ((p[0]) // CHUNK_SIZE, (p[1]) // CHUNK_SIZE, (p[2]) // CHUNK_SIZE)
+                chunkPos = ((p[0]) // CHUNK_SIZE, (p[2]) // CHUNK_SIZE)
                 if chunkPos in self.app.world.chunks:
                     if self.app.world.chunks[chunkPos].mesh.blocks[utils.flatten_coord(int(p[0]) % CHUNK_SIZE, int(p[1]) % CHUNK_SIZE, int(p[2]) % CHUNK_SIZE)]:
                             return True

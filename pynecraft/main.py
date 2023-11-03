@@ -49,7 +49,7 @@ class Pynecraft(pyglet.window.Window):
         # For some reason, this part takes way longer than actually building the VBOs
         for x in range(-3, 4):
             for z in range(-3, 4):
-                self.world.gen_chunk(x, 0, z)
+                self.world.gen_chunk(x, z)
 
         for chunk in self.world.chunks: # Build VBOs for all the chunks
             self.world.chunks[chunk].mesh.build()
