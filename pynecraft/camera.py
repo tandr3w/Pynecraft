@@ -50,6 +50,10 @@ class Camera:
         self.view_matrix = self.get_view_matrix()
 
     def check_collision(self, position):
+        return False
+        # Collision is still slightly broken:
+        # y checking is not working properly
+        # the int() in the position is messing things up
         x, y, z = position
         for c in [COLLISION_ZONE, -COLLISION_ZONE]:
             for p in ([x, y, z], [x + c, y, z], [x, y + c, z], [x, y, z+c], [x, y-1, z], [x+c, y-1, z], [x, y-1+c, z], [x, y-1, z+c]):

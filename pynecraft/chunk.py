@@ -25,6 +25,9 @@ class Chunk:
         blocks = np.zeros(CHUNK_SIZE ** 3, dtype='uint8')
         for x in range(CHUNK_SIZE):
             for z in range(CHUNK_SIZE):
+                # 0.02 - Scale, higher = smaller hills in the xy direction (less fat)
+                # 8 - Amplitude, higher = taller hills, lower valleys
+                # 32 - Sea level
                 local_height = int(glm.simplex(glm.vec2(self.position[0] + x, self.position[2] + z) * 0.02) * 8 + 32) - self.position[1]
                 if local_height < 0:
                     continue

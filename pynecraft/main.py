@@ -1,14 +1,17 @@
 # TODO:
-# Make chunks 256 tall (entire height)
-# Add dynamic chunk rendering (don't render if there's a world limit)
-# More advanced terrain generation
-# Add breaking / placing blocks
-# Add gravity
+
 # Pack data?
-# Use JIT with numba to make it faster
 # Get rid of pyrr since it's slow
-# Lighting
+# Use JIT with numba to make it faster
 # Optimize with Frustum culling?
+# Add dynamic chunk rendering (don't render if there's a world limit)
+# Make chunks 256 tall (entire height)
+# Swap the textures to not use that lame ass copied solution
+# Add breaking / placing blocks
+# More advanced terrain generation
+# Lighting
+# Fix collision
+# Add gravity
 
 import pyglet
 from pyglet.window import key
@@ -56,7 +59,7 @@ class Pynecraft(pyglet.window.Window):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_DEPTH_TEST);  
-        glEnable(GL_CULL_FACE);  
+        # glEnable(GL_CULL_FACE);  
 
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT)
