@@ -4,7 +4,6 @@ from pyglet.window import key
 import glm
 from constants import *
 import utils
-from utils import *
 
 class Camera:
     def __init__(self, app, position=(0, 70, 0), yaw=0, pitch=0):
@@ -16,8 +15,15 @@ class Camera:
         self.forward = pyrr.vector3.create(x=0, y=0, z=-1, dtype=np.float32)
         self.yaw = yaw
         self.pitch = pitch
+        self.speed = SPEED
         self.view_matrix = self.get_view_matrix()
         self.proj_matrix = self.get_projection_matrix()
+
+    def up_speed(self):
+        self.speed += 0.01
+
+    def down_speed(self):
+        self.speed -= 0.01
 
     def rotate(self, rel_x, rel_y):
         self.yaw -= rel_x * SENSITIVITY
@@ -58,7 +64,7 @@ class Camera:
         return False
 
     def move(self):
-        velocity = SPEED * self.app.delta_time * 100
+        velocity = self.speed * self.app.delta_time * 100
         # Want to make these move without moving up?
         # Set the z of all the forward, right to 0, and the forward/right of the up to 0 as well. Normalize the other ones.
         toMove = [0, 0, 0]

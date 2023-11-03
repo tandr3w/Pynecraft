@@ -2,6 +2,8 @@ CHUNK_SIZE = 8
 CHUNK_HEIGHT = 256
 TPS = 40
 
+RENDER_DISTANCE = 4
+
 # Camera Settings
 FOV = 50
 NEAR = 0.1

@@ -32,7 +32,12 @@ class Chunk:
                 if local_height < 0:
                     continue
                 for y in range(min(local_height, CHUNK_HEIGHT)):
-                    blocks[utils.flatten_coord(x, y, z)] = randint(1, 7)
+                    if local_height - y <= 1:
+                        blocks[utils.flatten_coord(x, y, z)] = 2
+                    elif local_height - y <= 3:
+                        blocks[utils.flatten_coord(x, y, z)] = 3
+                    else:
+                        blocks[utils.flatten_coord(x, y, z)] = randint(4, 7)
         return blocks
 
 class ChunkMesh(BaseShape):

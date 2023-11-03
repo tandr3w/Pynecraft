@@ -1,8 +1,7 @@
 # TODO:
 
-# Optimize with Frustum culling?
-# Try making chunk height 256 (entire height) but the size 8x8, get rid of the y coord in the chunk positions etc.
 # Add dynamic chunk rendering (don't render if there's a world limit)
+# Optimize with Frustum culling?
 # Swap the textures to not use that lame ass copied solution
 # Add breaking / placing blocks
 # More advanced terrain generation
@@ -24,6 +23,7 @@ from chunk import Chunk
 from shader import Shader
 from world import World
 from material import Material
+import constants
 
 class Pynecraft(pyglet.window.Window):
 
@@ -47,8 +47,8 @@ class Pynecraft(pyglet.window.Window):
         super(Pynecraft, self).set_exclusive_mouse(True)
 
         # For some reason, this part takes way longer than actually building the VBOs
-        for x in range(-3, 4):
-            for z in range(-3, 4):
+        for x in range(-6, 8):
+            for z in range(-6, 8):
                 self.world.gen_chunk(x, z)
 
         for chunk in self.world.chunks: # Build VBOs for all the chunks
@@ -79,6 +79,10 @@ class Pynecraft(pyglet.window.Window):
         self.held_keys.remove(symbol)
         if symbol == key.ESCAPE:
             self.close()
+        elif symbol == key.EQUAL:
+            self.camera.up_speed()
+        elif symbol == key.MINUS:
+            self.camera.down_speed()
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.camera.rotate(-dx, dy)
