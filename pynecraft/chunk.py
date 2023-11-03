@@ -22,16 +22,16 @@ class Chunk:
         """
         Represent chunks as flattened 16x16x16 arrays, where each block is represented as an integer between 0-255
         """
-        blocks = np.zeros(CHUNK_SIZE ** 3, dtype='uint8')
+        blocks = np.zeros(CHUNK_SIZE ** 2 * CHUNK_HEIGHT, dtype='uint8')
         for x in range(CHUNK_SIZE):
             for z in range(CHUNK_SIZE):
                 # 0.02 - Scale, higher = smaller hills in the xy direction (less fat)
                 # 8 - Amplitude, higher = taller hills, lower valleys
                 # 32 - Sea level
-                local_height = int(glm.simplex(glm.vec2(self.position[0] + x, self.position[2] + z) * 0.02) * 8 + 32) - self.position[1]
+                local_height = int(glm.simplex(glm.vec2(self.position[0] + x, self.position[2] + z) * 0.02) * 8 + 64) - self.position[1]
                 if local_height < 0:
                     continue
-                for y in range(min(local_height, CHUNK_SIZE)):
+                for y in range(min(local_height, CHUNK_HEIGHT)):
                     blocks[utils.flatten_coord(x, y, z)] = randint(1, 7)
         return blocks
 

@@ -13,7 +13,7 @@ SENSITIVITY = 0.15
 COLLISION_ZONE = 0.2
 
 class Camera:
-    def __init__(self, app, position=(0, 40, 0), yaw=0, pitch=0):
+    def __init__(self, app, position=(0, 70, 0), yaw=0, pitch=0):
         self.app = app
         self.aspect_ratio = app.WIN_SIZE[0] / app.WIN_SIZE[1]
         self.position = pyrr.vector3.create(x=position[0], y=position[1], z=position[2], dtype=np.float32)

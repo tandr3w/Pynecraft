@@ -1,19 +1,16 @@
 # TODO:
 
-# Use JIT with numba to make it faster
-
 # Optimize with Frustum culling?
+# Try making chunk height 256 (entire height) but the size 8x8, get rid of the y coord in the chunk positions etc.
 # Add dynamic chunk rendering (don't render if there's a world limit)
-# Make chunks 256 tall (entire height)
 # Swap the textures to not use that lame ass copied solution
 # Add breaking / placing blocks
 # More advanced terrain generation
-# Lighting
 # Fix collision
 # Add gravity
 # Get rid of pyrr since it's slow
+# Lighting
 # Pack data?
-
 
 import pyglet
 from pyglet.window import key
@@ -50,15 +47,13 @@ class Pynecraft(pyglet.window.Window):
         super(Pynecraft, self).set_exclusive_mouse(True)
 
         # For some reason, this part takes way longer than actually building the VBOs
-        for x in range(4):
-            for z in range(4):
-                for y in range(1, 4):
-                    self.world.gen_chunk(x, y, z)
+        for x in range(-3, 4):
+            for z in range(-3, 4):
+                self.world.gen_chunk(x, 0, z)
 
-        print("Chunks finished building")
         for chunk in self.world.chunks: # Build VBOs for all the chunks
             self.world.chunks[chunk].mesh.build()
-        
+
     def init_opengl(self):
         glClearColor(0.1, 0.2, 0.2, 1)
 

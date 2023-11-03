@@ -18,11 +18,11 @@ def is_empty(world, chunkX, chunkY, chunkZ, blocks, x, y, z):
             if world[(chunkX - 1, chunkY, chunkZ)][flatten_coord(CHUNK_SIZE - 1, y, z)]:
                 return False
         return True
-    elif y < 0:
-        if (chunkX, chunkY - 1, chunkZ) in world:
-            if world[(chunkX, chunkY - 1, chunkZ)][flatten_coord(x, CHUNK_SIZE - 1, z)]:
-                return False
-        return True
+    # elif y < 0:
+    #     if (chunkX, chunkY - 1, chunkZ) in world:
+    #         if world[(chunkX, chunkY - 1, chunkZ)][flatten_coord(x, CHUNK_SIZE - 1, z)]:
+    #             return False
+    #     return True
     elif z < 0:
         if (chunkX, chunkY, chunkZ - 1) in world:
             if world[(chunkX, chunkY, chunkZ - 1)][flatten_coord(x, y, CHUNK_SIZE - 1)]:
@@ -58,11 +58,11 @@ def add_face(vertex_data, index, vertices):
 
 @njit
 def build_chunk(world, chunkX, chunkY, chunkZ, blocks):
-    vertex_data = np.empty(CHUNK_SIZE**3 * 18 * 5, dtype="uint8")
+    vertex_data = np.empty(CHUNK_SIZE**2 * CHUNK_HEIGHT * 18 * 5, dtype="uint8")
     index = 0
 
     for x in range(CHUNK_SIZE):
-        for y in range(CHUNK_SIZE):
+        for y in range(CHUNK_HEIGHT):
             for z in range(CHUNK_SIZE):
                 block_type = blocks[flatten_coord(x, y, z)]
                 if block_type == 0:
