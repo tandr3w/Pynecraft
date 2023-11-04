@@ -67,10 +67,10 @@ class World:
                             self.gen_chunk(x, z)
                             self.build_chunk(x, z)
                             # Rebuild adjacent chunks to cull faces
-                            self.build_chunk(x+1, z)
-                            self.build_chunk(x-1, z)
-                            self.build_chunk(x, z+1)
-                            self.build_chunk(x, z-1)
+                            # self.build_chunk(x+1, z)
+                            # self.build_chunk(x-1, z)
+                            # self.build_chunk(x, z+1)
+                            # self.build_chunk(x, z-1)
 
                 else:
                     self.chunks[(x, z)].mesh.draw()
