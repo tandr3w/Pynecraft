@@ -59,7 +59,7 @@ class Camera:
             for p in ([x, y, z], [x + c, y, z], [x, y + c, z], [x, y, z+c], [x, y-1, z], [x+c, y-1, z], [x, y-1+c, z], [x, y-1, z+c]):
                 chunkPos = ((p[0]) // CHUNK_SIZE, (p[2]) // CHUNK_SIZE)
                 if chunkPos in self.app.world.chunks:
-                    if self.app.world.chunks[chunkPos].mesh.blocks[utils.flatten_coord(int(p[0]) % CHUNK_SIZE, int(p[1]) % CHUNK_SIZE, int(p[2]) % CHUNK_SIZE)]:
+                    if self.app.world.chunks[chunkPos].blocks[utils.flatten_coord(int(p[0]) % CHUNK_SIZE, int(p[1]) % CHUNK_SIZE, int(p[2]) % CHUNK_SIZE)]:
                             return True
         return False
 

@@ -27,11 +27,11 @@ class World:
 
     def gen_chunk(self, x, z):
         self.chunks[(x, z)] = Chunk(self.app, position=[x*CHUNK_SIZE, 0, z*CHUNK_SIZE])
-        self.numba_chunks[(x, z)] = self.chunks[(x, z)].mesh.blocks
+        self.numba_chunks[(x, z)] = self.chunks[(x, z)].blocks
 
     def build_chunk(self, x, z):
         if (x, z) in self.chunks:
-            self.chunks[(x, z)].mesh.build()
+            self.chunks[(x, z)].build()
 
     def render_chunks(self, position, isAsync=False):
         chunk_pos = (int(position[0] // CHUNK_SIZE), int(position[2] // CHUNK_SIZE))
@@ -58,4 +58,4 @@ class World:
                             self.build_chunk(x, z)
 
                 else:
-                    self.chunks[(x, z)].mesh.draw()
+                    self.chunks[(x, z)].draw()
