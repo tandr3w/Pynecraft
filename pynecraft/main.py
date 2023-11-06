@@ -1,8 +1,7 @@
 # TODO:
+# Revert back to old version! Make sure to copy this to do list tho
+# Do not generate a new VBO and VAO for each new chunk since the format stays the same. Simply add the vertices to the buffer.
 
-# Add dynamic chunk rendering
-# - Multiprocesses do not share memory, so the async functions can only return things
-# - Create a chunk provider and pass that into the async
 # Optimize with Frustum culling?
 # Swap the textures to not use that lame ass copied solution
 # Add breaking / placing blocks
@@ -12,6 +11,11 @@
 # Get rid of pyrr since it's slow
 # Lighting
 # Pack data?
+# Add dynamic chunk rendering.
+    # - simplify the functions and objects, make the chunk object pickleable
+    # - merge chunk, chunkmesh, and baseshape. You don't need all of them.
+    # - test to see if making async processes is actually just slower than generating the chunk
+
 
 import pyglet
 from pyglet.window import key
@@ -60,10 +64,10 @@ class Pynecraft(pyglet.window.Window):
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
         self.camera.update()
-        self.world.render_chunks(self.camera.position, isAsync=False)
+        self.world.render_chunks(self.camera.position)
 
     def on_key_press(self, symbol, modifiers):
-        self.held_keys.add(symbol)        
+        self.held_keys.add(symbol)
         if symbol == key.ESCAPE:
             self.close()
 
