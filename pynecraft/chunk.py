@@ -1,5 +1,4 @@
 import numpy as np
-from shapes import BaseShape
 from constants import *
 import utils
 from chunk_builder import build_chunk
@@ -7,6 +6,7 @@ from material import Material
 from OpenGL.GL import *
 import glm
 from random import randint
+import pyrr
 
 """
 Since it would be silly to render thousands of individual blocks, they are combined into 16x16x16 chunks.
@@ -40,14 +40,24 @@ class Chunk:
                         blocks[utils.flatten_coord(x, y, z)] = randint(4, 7)
         return blocks
 
-class ChunkMesh(BaseShape):
+class ChunkMesh:
     def __init__(self, chunk, app, position, eulers):
+        self.app = app
         self.chunk = chunk
         self.vertex_count = 0
         self.position = position
         self.blocks = self.chunk.get_blocks()
-        super().__init__(app=app, position=position, eulers=eulers, name="chunk")
         self.material = self.app.blockMaterial
+        self.eulers = np.array(eulers, dtype=np.float32)
+        self.material = False
+        self.vbo = None
+        self.vao = None
+        self.shader = self.app.shader.shaders["chunk"]
+        self.model_matrix = self.get_model_matrix()
+
+    def build(self):
+        self.vbo = self.get_vbo()
+        self.vao = self.get_vao()
 
     def get_vbo(self):
         vertices = build_chunk(self.app.world.numba_chunks, self.chunk.chunkPos[0], self.chunk.chunkPos[1], self.chunk.chunkPos[2], self.blocks)
@@ -69,3 +79,32 @@ class ChunkMesh(BaseShape):
         glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, 5, ctypes.c_void_p(4))
         return vao
 
+    def get_model_matrix(self): # The actual transformations of the shape
+        model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
+        model_transform = pyrr.matrix44.multiply(
+            m1=model_transform, 
+            m2=pyrr.matrix44.create_from_axis_rotation(
+                axis = [0, 1, 0],
+                theta = np.radians(self.eulers[1]), 
+                dtype = np.float32
+            )
+        )
+
+        return pyrr.matrix44.multiply(
+            m1=model_transform, 
+            m2=pyrr.matrix44.create_from_translation(
+                vec=np.array(self.position),dtype=np.float32
+            )
+        )
+
+    def draw(self):
+        # VBOs are connected to the VAOs, and will automatically do so when the VAO is init'ed, which will use the currently bound VBO
+        glBindVertexArray(self.vao)
+        glUseProgram(self.shader)
+        if self.material:
+            self.material.use()
+
+        glUniformMatrix4fv(glGetUniformLocation(self.shader, "m_proj"), 1, GL_FALSE, self.app.camera.proj_matrix)
+        glUniformMatrix4fv(glGetUniformLocation(self.shader, "m_view"), 1, GL_FALSE, self.app.camera.view_matrix)
+        glUniformMatrix4fv(glGetUniformLocation(self.shader, "m_model"), 1, GL_FALSE, self.model_matrix)
+        glDrawArrays(GL_TRIANGLES, 0, self.vertex_count)

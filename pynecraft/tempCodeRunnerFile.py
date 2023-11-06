@@ -1,2 +1,1 @@
-
-        self.world.render_chunks(self.camera.position, isAsync=False)
+from OpenGL.GL import *

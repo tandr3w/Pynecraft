@@ -24,7 +24,6 @@ from constants import *
 import sys
 import numpy as np
 from camera import Camera
-from shapes import Quad
 from chunk import Chunk
 from shader import Shader
 from world import World
