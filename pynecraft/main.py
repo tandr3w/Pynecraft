@@ -51,6 +51,8 @@ class Pynecraft(pyglet.window.Window):
 
         pyglet.clock.schedule_interval(self.update, 1 / TPS)
         super(Pynecraft, self).set_exclusive_mouse(True)
+        self.world.render_chunks(self.camera.position)
+
 
     def init_opengl(self):
         glClearColor(0.1, 0.2, 0.2, 1)
@@ -64,7 +66,7 @@ class Pynecraft(pyglet.window.Window):
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
         self.camera.update()
-        self.world.render_chunks(self.camera.position)
+        self.world.render_chunks(self.camera.position, isAsync=True)
 
     def on_key_press(self, symbol, modifiers):
         self.held_keys.add(symbol)
