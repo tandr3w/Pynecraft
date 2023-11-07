@@ -14,11 +14,14 @@ Since it would be silly to render thousands of individual blocks, they are combi
 from constants import *
 
 class Chunk:
-    def __init__(self, app, position):
+    def __init__(self, app, position, blocks=[]):
         self.app = app
         self.vertex_count = 0
         self.position = position
-        self.blocks = self.get_blocks()
+        if len(blocks):
+            self.blocks = blocks
+        else:
+            self.blocks = self.get_blocks()
         self.material = self.app.blockMaterial
         self.material = False
         self.vbo = None
@@ -27,12 +30,13 @@ class Chunk:
         self.model_matrix = self.get_model_matrix()
         self.chunkPos = [position[0] // CHUNK_SIZE, position[1] // CHUNK_SIZE, position[2] // CHUNK_SIZE]
 
-    def build(self):
-        self.vbo = self.get_vbo()
+    def build(self, vertices=[]):
+        self.vbo = self.get_vbo(vertices)
         self.vao = self.get_vao()
 
-    def get_vbo(self):
-        vertices = build_chunk(self.app.world.numba_chunks, self.chunkPos[0], self.chunkPos[1], self.chunkPos[2], self.blocks)
+    def get_vbo(self, vertices):
+        if not len(vertices):
+            vertices = build_chunk(self.app.world.numba_chunks, self.chunkPos[0], self.chunkPos[1], self.chunkPos[2], self.blocks)
         self.vertex_count = len(vertices) // 5
         vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)

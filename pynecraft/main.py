@@ -1,6 +1,7 @@
 # TODO:
-# Revert back to old version! Make sure to copy this to do list tho
-# Do not generate a new VBO and VAO for each new chunk since the format stays the same. Simply add the vertices to the buffer.
+# Use generated chunks, actually add them to the array, build, etc.
+# Use numba with the async chunk generation to make it faster
+# Avoid copy paste of code in async chunk generation, make a chunk provider class with all the functions
 
 # Optimize with Frustum culling?
 # Swap the textures to not use that lame ass copied solution
