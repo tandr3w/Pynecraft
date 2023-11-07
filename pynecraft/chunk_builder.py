@@ -3,11 +3,6 @@ import utils
 import numpy as np
 from numba import njit, uint8
 
-class ChunkBuilder:
-    def __init__(self):
-        pass
-    
-
 @njit
 def flatten_coord(x, y, z):
     return x + CHUNK_SIZE * z + CHUNK_SIZE**2 * y
@@ -56,7 +51,7 @@ def add_face(vertex_data, index, vertices):
     return index
 
 @njit
-def build_chunk(world, chunkX, chunkY, chunkZ, blocks):
+def build_chunk(chunkX, chunkY, chunkZ, blocks):
     vertex_data = np.empty(CHUNK_SIZE**2 * CHUNK_HEIGHT * 18 * 5, dtype="uint8")
     index = 0
 

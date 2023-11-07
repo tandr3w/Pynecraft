@@ -36,7 +36,8 @@ class Chunk:
 
     def get_vbo(self, vertices):
         if not len(vertices):
-            vertices = build_chunk(self.app.world.numba_chunks, self.chunkPos[0], self.chunkPos[1], self.chunkPos[2], self.blocks)
+            vertices = build_chunk(self.chunkPos[0], self.chunkPos[1], self.chunkPos[2], self.blocks)
+            
         self.vertex_count = len(vertices) // 5
         vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
