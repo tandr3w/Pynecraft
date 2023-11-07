@@ -69,7 +69,6 @@ class World:
                             # To generate new VBOs, I guess add to a set of the chunks that need it?
 
                             def call(result):
-                                print("generated")
                                 self.gen_queue.remove((result[0], result[1]))
                                 self.needs_building[(result[0], result[1])] = (result[2], result[3])
                                 
@@ -77,7 +76,6 @@ class World:
                                 print(err)
 
                             res = self.pool.apply_async(chunk_provider, (x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk), callback=call, error_callback=error)
-                            print("async applied!")
                         else:
                             res = chunk_provider(x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk)
                             self.needs_building[(res[0], res[1])] = (res[2], res[3])

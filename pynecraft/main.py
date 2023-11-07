@@ -51,7 +51,6 @@ class Pynecraft(pyglet.window.Window):
 
         pyglet.clock.schedule_interval(self.update, 1 / TPS)
         super(Pynecraft, self).set_exclusive_mouse(True)
-        self.world.render_chunks(self.camera.position)
 
     def init_opengl(self):
         glClearColor(0.1, 0.2, 0.2, 1)
