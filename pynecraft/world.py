@@ -40,6 +40,7 @@ class World:
         self.numba_chunks = Dict()
         self.needs_building = {}
         self.gen_queue = set()
+        self.firstLoad = False
 
     def get_chunk(self, x, z):
         loc = (x, z)
@@ -53,6 +54,13 @@ class World:
         if (x, z) in self.chunks:
             self.chunks[(x, z)].build(vertices)
 
+    def get_block(self, x, y, z):
+        chunkX = x // CHUNK_SIZE
+        chunkZ = z // CHUNK_SIZE
+        if (chunkX, chunkZ) in self.chunks:
+            return self.chunks[(chunkX, chunkZ)].blocks[flatten_coord(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE)]
+        return False
+
     def render_chunks(self, position, isAsync=False):
         chunk_pos = (int(position[0] // CHUNK_SIZE), int(position[2] // CHUNK_SIZE))
         for x in range(int(chunk_pos[0] - RENDER_DISTANCE), int(chunk_pos[0] + RENDER_DISTANCE + 1)):
@@ -61,6 +69,7 @@ class World:
                     if (x, z) in self.needs_building:
                         self.gen_chunk(x, z, self.needs_building[(x, z)][0])
                         self.build_chunk(x, z)
+                        self.firstLoad = True
                         del self.needs_building[(x, z)]
                     elif (x, z) not in self.gen_queue:
                         if isAsync:
