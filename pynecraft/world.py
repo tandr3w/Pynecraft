@@ -57,8 +57,8 @@ class World:
     def get_block(self, x, y, z):
         chunkX = x // CHUNK_SIZE
         chunkZ = z // CHUNK_SIZE
-        if (chunkX, chunkZ) in self.chunks:
-            return self.chunks[(chunkX, chunkZ)].blocks[flatten_coord(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE)]
+        if (chunkX, chunkZ) in self.chunks and y < 255:
+            return self.chunks[(chunkX, chunkZ)].blocks[flatten_coord(x % CHUNK_SIZE, y, z % CHUNK_SIZE)]
         return False
 
     def render_chunks(self, position, isAsync=False):

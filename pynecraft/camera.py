@@ -52,12 +52,6 @@ class Camera:
     def check_collision(self, position):
         return False
 
-    def direction(self):
-        m = glm.cos(glm.radians(self.pitch))
-        dy = -glm.sin(glm.radians(self.pitch))
-        dx = glm.cos(glm.radians(self.yaw - 90)) * m
-        dz = glm.sin(glm.radians(self.yaw - 90)) * m
-        return pyrr.vector.normalise([dx, dy, dz])
 
     def move(self):
         velocity = self.speed * self.app.delta_time * 100

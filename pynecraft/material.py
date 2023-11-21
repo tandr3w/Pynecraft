@@ -3,12 +3,16 @@ import pyglet
 
 class Material:    
     def __init__(self, filepath, isArr=False):
+        self.isArr = isArr
         image = pyglet.image.load(filepath)
         image_width, image_height = image.width, image.height
         self.texture = glGenTextures(1)
         pitch = image.width * len("RGBA")
         img_data = image.get_data("RGBA", pitch)
         if not isArr:
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, image_width)
+            glPixelStorei(GL_UNPACK_SKIP_ROWS, 0)
+
             glBindTexture(GL_TEXTURE_2D, self.texture)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -34,7 +38,10 @@ class Material:
 
     def use(self) -> None:
         glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture)
+        if self.isArr:
+            glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture)
+        else:
+            glBindTexture(GL_TEXTURE_2D, self.texture)
 
     def destroy(self) -> None:
         glDeleteTextures(1, (self.texture,))
