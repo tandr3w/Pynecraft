@@ -10,6 +10,9 @@
 # Add saving / write to disk
 # Optimize with Frustum culling?
 
+# add a loading screen for when the world hasn't loaded yet
+# fix exclusive mouse bugs
+# fix can't move camera while walking
 
 import pyglet
 from pyglet.window import key
@@ -55,13 +58,12 @@ class Pynecraft(pyglet.window.Window):
         self.marker = BlockMarker(self)
         self.init_opengl()
 
-
     def set_exclusive(self, val):
         super(Pynecraft, self).set_exclusive_mouse(val)
         self.exclusive = val
 
     def init_opengl(self):
-        glClearColor(0.1, 0.2, 0.2, 1)
+        glClearColor(0.2, 0.1, 0.1, 1)
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -72,6 +74,9 @@ class Pynecraft(pyglet.window.Window):
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
         
+        if self.world.firstLoad:
+            glClearColor(0.1, 0.2, 0.2, 1)
+
         self.camera.update()
         self.world.render_chunks(self.camera.position, isAsync=True)
         self.batch.draw()

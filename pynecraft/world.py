@@ -75,8 +75,6 @@ class World:
                         if isAsync:
                             self.gen_queue.add((x, z))
 
-                            # To generate new VBOs, I guess add to a set of the chunks that need it?
-
                             def call(result):
                                 self.gen_queue.remove((result[0], result[1]))
                                 self.needs_building[(result[0], result[1])] = (result[2], result[3])
