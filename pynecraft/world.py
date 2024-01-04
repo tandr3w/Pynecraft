@@ -76,8 +76,8 @@ class World:
                             self.gen_queue.add((x, z))
 
                             def call(result):
-                                self.gen_queue.remove((result[0], result[1]))
                                 self.needs_building[(result[0], result[1])] = (result[2], result[3])
+                                self.gen_queue.remove((result[0], result[1]))
                                 
                             def error(err):
                                 print(err)

@@ -1,18 +1,18 @@
 # TODO:
+# Fix placing blocks on diagonals
 # Fix collision, note that when getting the block, if the pos is negative you have to -ceil(-x) instead of int(x)
 # Prevent placing in illegal positions (diagonally) - don't save it in prevblock if its not adjacent, instead save the nearest block that is actually adjacent
-# More advanced terrain generation
-# Swap the textures to not use that lame ass copied solution
 # Add main menu
-# Add gravity / jumping / singleplayer mode
-# Lighting / fog
-# Add graphic for which block you are placing
-# Add saving / write to disk
-# Optimize with Frustum culling?
-
 # add a loading screen for when the world hasn't loaded yet
 # fix exclusive mouse bugs
-# fix can't move camera while walking
+
+# Add gravity / jumping. and an option to switch between survival/creative/spectator
+# Add an escape menu with options
+
+# Basic Lighting / fog
+# More advanced terrain generation
+
+# Swap the textures to not use that lame ass copied solution
 
 import pyglet
 from pyglet.window import key
@@ -27,7 +27,7 @@ from world import World
 from material import Material
 import constants
 import utils
-from math import ceil
+from math import ceil, sqrt
 
 class Pynecraft(pyglet.window.Window):
 
@@ -87,21 +87,40 @@ class Pynecraft(pyglet.window.Window):
 
     def get_selected_block(self):
         if self.world.firstLoad:
+            floatPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
             currPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
+
             prevBlock = None
+            prevFloat = None
+
             for i in range(128):
-                currPos = [self.camera.position[0] + self.camera.forward[0] * 0.05 * i, self.camera.position[1] + self.camera.forward[1] * 0.05 * i, self.camera.position[2] + self.camera.forward[2] * 0.05 * i]
+                floatPos = [self.camera.position[0] + self.camera.forward[0] * 0.05 * i, self.camera.position[1] + self.camera.forward[1] * 0.05 * i, self.camera.position[2] + self.camera.forward[2] * 0.05 * i]
                 # print(currPos)
                 for j in range(3):
                     if currPos[j] < 0:
-                        currPos[j] = -ceil(-currPos[j])
+                        currPos[j] = -ceil(-floatPos[j])
                     else:
-                        currPos[j] = int(currPos[j])
+                        currPos[j] = int(floatPos[j])
                 block = self.world.get_block(currPos[0], currPos[1], currPos[2])
                 if block:
+                    if prevBlock:
+                        # Can't place diagonally -- find the closest center of an adjacent block to prevFloat
+                        if abs(prevBlock[0]-currPos[0]) + abs(prevBlock[2]-currPos[2]) + abs(prevBlock[1]-currPos[1]) != 1:
+                            minDist = float("inf")
+                            adjacent = [(currPos[0]+1, currPos[1], currPos[2]), (currPos[0]-1, currPos[1], currPos[2]),
+                                     (currPos[0], currPos[1]+1, currPos[2]), (currPos[0], currPos[1]-1, currPos[2]),
+                                     (currPos[0], currPos[1], currPos[2]+1), (currPos[0], currPos[1], currPos[2]-1)]
+                            for newPrev in adjacent:
+                                # Distance between two 3d points, add 0.5 to get center of block
+                                newDist = sqrt(abs(prevFloat[0]-(newPrev[0]+0.5))**2 + abs(prevFloat[1]-(newPrev[1]+0.5))**2 + abs(prevFloat[2]-(newPrev[2]+0.5))**2)
+                                if newDist < minDist:
+                                    minDist = newDist
+                                    prevBlock = newPrev
+
                     return (currPos[0], currPos[1], currPos[2], prevBlock)
                 else:
                     prevBlock = (currPos[0], currPos[1], currPos[2])
+                    prevFloat = (floatPos[0], floatPos[1], floatPos[2])
 
     def on_key_press(self, symbol, modifiers):
         self.held_keys.add(symbol)
@@ -154,7 +173,8 @@ class Pynecraft(pyglet.window.Window):
                     chunkX = block[3][0] // CHUNK_SIZE
                     chunkZ = block[3][2] // CHUNK_SIZE
                     if (chunkX, chunkZ) in self.world.chunks:
-                        # print("Placing!")
+                        # Don't allow blocks to be placed on diagonals
+                        # Possibly in the future, check which block placement is closer rather than not allowing placement at all
                         if block[3][1] < 255:
                             self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = self.placingBlock
                             self.world.build_chunk(chunkX, chunkZ) 

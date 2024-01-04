@@ -3,15 +3,15 @@ import utils
 import numpy as np
 from numba import njit, uint8
 
-@njit(cache=True)
+@njit
 def flatten_coord(x, y, z):
     return x + CHUNK_SIZE * z + CHUNK_SIZE**2 * y
 
-@njit(cache=True)
+@njit
 def to_uint8(a, b, c, d, e):
     return uint8(a), uint8(b), uint8(c), uint8(d), uint8(e)
 
-@njit(cache=True)
+@njit
 def is_empty(chunkX, chunkZ, blocks, x, y, z):
     if x < 0:
         # if (chunkX - 1, chunkZ) in world:
@@ -42,7 +42,7 @@ def is_empty(chunkX, chunkZ, blocks, x, y, z):
     else:
         return True
 
-@njit(cache=True)
+@njit
 def add_face(vertex_data, index, vertices):
     for vertex in vertices:
         for attr in vertex:
@@ -50,7 +50,7 @@ def add_face(vertex_data, index, vertices):
             index += 1
     return index
 
-@njit(cache=True)
+@njit
 def build_chunk(chunkX, chunkY, chunkZ, blocks):
     vertex_data = np.empty(CHUNK_SIZE**2 * CHUNK_HEIGHT * 18 * 5, dtype="uint8")
     index = 0

@@ -55,8 +55,6 @@ class Camera:
 
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
-        # Want to make these move without moving up?
-        # Set the z of all the forward, right to 0, and the forward/right of the up to 0 as well. Normalize the other ones.
         toMove = [0, 0, 0]
         moveForward = pyrr.vector.normalise(np.array([self.forward[0], self.forward[2]], dtype=np.float32)) * velocity
         moveRight = pyrr.vector.normalise(np.array([self.right[0], self.right[2]], dtype=np.float32)) * velocity
