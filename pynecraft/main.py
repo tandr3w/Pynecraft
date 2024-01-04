@@ -1,10 +1,11 @@
 # TODO:
-# Fix placing blocks on diagonals
+# fix exclusive mouse bugs
+
 # Fix collision, note that when getting the block, if the pos is negative you have to -ceil(-x) instead of int(x)
-# Prevent placing in illegal positions (diagonally) - don't save it in prevblock if its not adjacent, instead save the nearest block that is actually adjacent
 # Add main menu
 # add a loading screen for when the world hasn't loaded yet
-# fix exclusive mouse bugs
+
+# Movement is finnicky when multiple keys are pressed at the same time
 
 # Add gravity / jumping. and an option to switch between survival/creative/spectator
 # Add an escape menu with options
@@ -13,6 +14,11 @@
 # More advanced terrain generation
 
 # Swap the textures to not use that lame ass copied solution
+# Add a save system
+
+# Allow holding to break/place blocks
+
+# Add installation instructions & requirements.txt
 
 import pyglet
 from pyglet.window import key
@@ -46,9 +52,9 @@ class Pynecraft(pyglet.window.Window):
         self.held_keys = set()
         self.blockMaterial = Material("gfx/tex_array_1.png", isArr=True)
         self.placingBlock = 1
+        self.exclusive = False
 
         pyglet.clock.schedule_interval(self.update, 1 / TPS)
-        self.set_exclusive(True)
 
         self.batch = pyglet.graphics.Batch()
         CROSSHAIR_COLOR = (100, 100, 100, 150)
@@ -58,9 +64,10 @@ class Pynecraft(pyglet.window.Window):
         self.marker = BlockMarker(self)
         self.init_opengl()
 
-    def set_exclusive(self, val):
-        super(Pynecraft, self).set_exclusive_mouse(val)
-        self.exclusive = val
+    def set_exclusive(self):
+        super(Pynecraft, self).set_exclusive_mouse(False)
+        super(Pynecraft, self).set_exclusive_mouse(True)
+        self.exclusive = True
 
     def init_opengl(self):
         glClearColor(0.2, 0.1, 0.1, 1)
@@ -76,6 +83,7 @@ class Pynecraft(pyglet.window.Window):
         
         if self.world.firstLoad:
             glClearColor(0.1, 0.2, 0.2, 1)
+            self.set_exclusive()
 
         self.camera.update()
         self.world.render_chunks(self.camera.position, isAsync=True)
@@ -89,7 +97,6 @@ class Pynecraft(pyglet.window.Window):
         if self.world.firstLoad:
             floatPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
             currPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
-
             prevBlock = None
             prevFloat = None
 
@@ -159,15 +166,13 @@ class Pynecraft(pyglet.window.Window):
         block = self.get_selected_block()
         if not block == None:
             if button == pyglet.window.mouse.LEFT:
-                if self.exclusive:
-                    chunkX = block[0] // CHUNK_SIZE
-                    chunkZ = block[2] // CHUNK_SIZE
-                    if (chunkX, chunkZ) in self.world.chunks:
-                        # print("Breaking!")
-                        self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[0] % CHUNK_SIZE, block[1] % CHUNK_HEIGHT, block[2] % CHUNK_SIZE)] = 0
-                        self.world.build_chunk(chunkX, chunkZ)
-                else:
-                    self.set_exclusive(True)
+                self.set_exclusive()
+                chunkX = block[0] // CHUNK_SIZE
+                chunkZ = block[2] // CHUNK_SIZE
+                if (chunkX, chunkZ) in self.world.chunks:
+                    # print("Breaking!")
+                    self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[0] % CHUNK_SIZE, block[1] % CHUNK_HEIGHT, block[2] % CHUNK_SIZE)] = 0
+                    self.world.build_chunk(chunkX, chunkZ)
             elif button == pyglet.window.mouse.RIGHT and self.exclusive:
                 if not block[3] == None:
                     chunkX = block[3][0] // CHUNK_SIZE
