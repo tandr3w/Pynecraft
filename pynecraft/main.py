@@ -1,6 +1,4 @@
 # TODO:
-# fix exclusive mouse bugs
-
 # Fix collision, note that when getting the block, if the pos is negative you have to -ceil(-x) instead of int(x)
 # Add main menu
 # add a loading screen for when the world hasn't loaded yet
@@ -118,7 +116,7 @@ class Pynecraft(pyglet.window.Window):
                                      (currPos[0], currPos[1]+1, currPos[2]), (currPos[0], currPos[1]-1, currPos[2]),
                                      (currPos[0], currPos[1], currPos[2]+1), (currPos[0], currPos[1], currPos[2]-1)]
                             for newPrev in adjacent:
-                                # Distance between two 3d points, add 0.5 to get center of block
+                                # Distance between twowwwwwwww 3d points, add 0.5 to get center of block
                                 newDist = sqrt(abs(prevFloat[0]-(newPrev[0]+0.5))**2 + abs(prevFloat[1]-(newPrev[1]+0.5))**2 + abs(prevFloat[2]-(newPrev[2]+0.5))**2)
                                 if newDist < minDist:
                                     minDist = newDist

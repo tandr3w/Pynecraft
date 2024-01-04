@@ -4,6 +4,7 @@ from pyglet.window import key
 import glm
 from constants import *
 import utils
+from math import ceil
 
 class Camera:
     def __init__(self, app, position=(0, 70, 0), yaw=0, pitch=0):
@@ -49,7 +50,20 @@ class Camera:
         self.move()
         self.view_matrix = self.get_view_matrix()
 
+    # This method sucks, figure out how to do bounding boxes
     def check_collision(self, position):
+        x, y, z = position
+        for c in [COLLISION_ZONE, -COLLISION_ZONE]:
+            for p in ([x, y, z], [x + c, y, z], [x, y + c, z], [x, y, z+c], [x, y-1, z], [x+c, y-1, z], [x, y-1, z], [x, y-1, z+c]):
+                for j in range(3):
+                    if p[j] < 0:
+                        p[j] = -ceil(-p[j])
+                    else:
+                        p[j] = int(p[j])
+                chunkPos = ((p[0]) // CHUNK_SIZE, (p[1]) // CHUNK_HEIGHT, (p[2]) // CHUNK_SIZE)
+                if (chunkPos[0], chunkPos[2]) in self.app.world.chunks:
+                    if self.app.world.chunks[(chunkPos[0], chunkPos[2])].blocks[utils.flatten_coord(p[0] % CHUNK_SIZE, p[1] % CHUNK_HEIGHT, p[2] % CHUNK_SIZE)]:
+                            return True
         return False
 
 
@@ -94,6 +108,9 @@ class Camera:
             toMove[1] -= velocity
             if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
                 toMove[1] += velocity
+        
+        if toMove != [0, 0, 0]:
+            toMove = pyrr.vector.normalise(np.array([toMove[0], toMove[1], toMove[2]], dtype=np.float32)) * velocity
 
         self.position[0] += toMove[0]
         self.position[1] += toMove[1]
