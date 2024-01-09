@@ -1,9 +1,6 @@
 # TODO:
-# Fix collision, note that when getting the block, if the pos is negative you have to -ceil(-x) instead of int(x)
 # Add main menu
 # add a loading screen for when the world hasn't loaded yet
-
-# Movement is finnicky when multiple keys are pressed at the same time
 
 # Add gravity / jumping. and an option to switch between survival/creative/spectator
 # Add an escape menu with options
@@ -11,6 +8,7 @@
 # Basic Lighting / fog
 # More advanced terrain generation
 
+# Do actual good collision using bounding boxes
 # Swap the textures to not use that lame ass copied solution
 # Add a save system
 
