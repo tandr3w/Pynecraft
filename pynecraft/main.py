@@ -11,8 +11,6 @@
 # Swap the textures to not use that lame ass copied solution
 # Add a save system
 
-# Allow holding to break/place blocks
-
 # MUST DO:
 # Add installation instructions & requirements.txt
 # Comment code
@@ -94,7 +92,7 @@ class Pynecraft(pyglet.window.Window):
 
     def place_block(self):
         block = self.get_selected_block()
-        if not block[3] == None:
+        if not block == None and not block[3] == None:
             chunkX = block[3][0] // CHUNK_SIZE
             chunkZ = block[3][2] // CHUNK_SIZE
             if (chunkX, chunkZ) in self.world.chunks:
