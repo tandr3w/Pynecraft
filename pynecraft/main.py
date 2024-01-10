@@ -1,10 +1,10 @@
 # TODO:
+# Don't allow placing inside of yourself
 # Add main menu
 # add a loading screen for when the world hasn't loaded yet
 
-# Add gravity / jumping. and an option to switch between survival/creative/spectator
+# Delta time makes the movement kinda sus when it's laggy
 # Add an escape menu with options
-
 # Basic Lighting / fog
 # More advanced terrain generation
 
@@ -13,9 +13,11 @@
 
 # Allow holding to break/place blocks
 
+# MUST DO:
 # Add installation instructions & requirements.txt
+# Comment code
 
-# normalizing the movement is sus (e.g. when hugging a block)
+
 
 import pyglet
 from pyglet.window import key
@@ -51,6 +53,12 @@ class Pynecraft(pyglet.window.Window):
         self.placingBlock = 1
         self.exclusive = False
 
+        self.left_held = False
+        self.right_held = False
+
+        self.past_repeat = 0
+        self.curr_repeat_time = 0
+
         pyglet.clock.schedule_interval(self.update, 1 / TPS)
 
         self.batch = pyglet.graphics.Batch()
@@ -74,6 +82,28 @@ class Pynecraft(pyglet.window.Window):
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_CULL_FACE)
 
+    def break_selected_block(self):
+        block = self.get_selected_block()
+        if not block == None:
+            chunkX = block[0] // CHUNK_SIZE
+            chunkZ = block[2] // CHUNK_SIZE
+            if (chunkX, chunkZ) in self.world.chunks:
+                # print("Breaking!")
+                self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[0] % CHUNK_SIZE, block[1] % CHUNK_HEIGHT, block[2] % CHUNK_SIZE)] = 0
+                self.world.build_chunk(chunkX, chunkZ)
+
+    def place_block(self):
+        block = self.get_selected_block()
+        if not block[3] == None:
+            chunkX = block[3][0] // CHUNK_SIZE
+            chunkZ = block[3][2] // CHUNK_SIZE
+            if (chunkX, chunkZ) in self.world.chunks:
+                # Don't allow blocks to be placed on diagonals
+                # Possibly in the future, check which block placement is closer rather than not allowing placement at all
+                if block[3][1] < 255:
+                    self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = self.placingBlock
+                    self.world.build_chunk(chunkX, chunkZ) 
+
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
@@ -81,6 +111,20 @@ class Pynecraft(pyglet.window.Window):
         if self.world.firstLoad:
             glClearColor(0.52, 0.81, 0.92, 1)
             self.set_exclusive()
+
+        if self.left_held:
+            self.curr_repeat_time += self.delta_time
+            if (self.past_repeat < FIRST_REPEAT_DELAY and self.past_repeat + self.curr_repeat_time >= FIRST_REPEAT_DELAY ) or (self.past_repeat >= FIRST_REPEAT_DELAY and self.curr_repeat_time >= REPEAT_DELAY):
+                self.break_selected_block()
+                self.past_repeat += self.curr_repeat_time
+                self.curr_repeat_time = 0
+
+        elif self.right_held:
+            self.curr_repeat_time += self.delta_time
+            if (self.past_repeat < FIRST_REPEAT_DELAY and self.past_repeat + self.curr_repeat_time >= FIRST_REPEAT_DELAY ) or (self.past_repeat >= FIRST_REPEAT_DELAY and self.curr_repeat_time >= REPEAT_DELAY):
+                self.place_block()
+                self.past_repeat += self.curr_repeat_time
+                self.curr_repeat_time = 0
 
         self.camera.update()
         self.world.render_chunks(self.camera.position, isAsync=True)
@@ -153,6 +197,8 @@ class Pynecraft(pyglet.window.Window):
             self.placingBlock = 6
         elif symbol == key._7:
             self.placingBlock = 7
+        elif symbol == key.G:
+            self.camera.GRAVITY_ENABLED = not self.camera.GRAVITY_ENABLED
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
@@ -160,26 +206,29 @@ class Pynecraft(pyglet.window.Window):
             self.camera.update_camera_vectors()
 
     def on_mouse_press(self, x, y, button, modifiers):
-        block = self.get_selected_block()
-        if not block == None:
-            if button == pyglet.window.mouse.LEFT:
-                self.set_exclusive()
-                chunkX = block[0] // CHUNK_SIZE
-                chunkZ = block[2] // CHUNK_SIZE
-                if (chunkX, chunkZ) in self.world.chunks:
-                    # print("Breaking!")
-                    self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[0] % CHUNK_SIZE, block[1] % CHUNK_HEIGHT, block[2] % CHUNK_SIZE)] = 0
-                    self.world.build_chunk(chunkX, chunkZ)
-            elif button == pyglet.window.mouse.RIGHT and self.exclusive:
-                if not block[3] == None:
-                    chunkX = block[3][0] // CHUNK_SIZE
-                    chunkZ = block[3][2] // CHUNK_SIZE
-                    if (chunkX, chunkZ) in self.world.chunks:
-                        # Don't allow blocks to be placed on diagonals
-                        # Possibly in the future, check which block placement is closer rather than not allowing placement at all
-                        if block[3][1] < 255:
-                            self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = self.placingBlock
-                            self.world.build_chunk(chunkX, chunkZ) 
+        if button == pyglet.window.mouse.LEFT:
+            self.set_exclusive()
+            self.left_held = True
+            self.break_selected_block()
+
+        elif button == pyglet.window.mouse.RIGHT and self.exclusive:
+            self.right_held = True
+            self.place_block()
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        if button == pyglet.window.mouse.LEFT:
+            self.left_held = False
+
+        elif button == pyglet.window.mouse.RIGHT and self.exclusive:
+            self.right_held = False
+        
+        if self.left_held == False and self.right_held == False:
+            self.past_repeat = 0
+        
+        self.curr_repeat_time = 0
+
+    
+    
 
 
 if __name__ == '__main__':

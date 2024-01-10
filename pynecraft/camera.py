@@ -25,7 +25,6 @@ class Camera:
         self.view_matrix = self.get_view_matrix()
         self.proj_matrix = self.get_projection_matrix()
         
-
         # 1 = increasing, 0 = decreasing
         self.fovTransitionType = 0
 
@@ -66,7 +65,7 @@ class Camera:
     # This method sucks, figure out how to do bounding boxes
     def check_collision(self, position):
         x1 = position[0] - COLLISION_ZONE
-        y1 = position[1] - 1.8
+        y1 = position[1] - 2 + 2*COLLISION_ZONE
         z1 = position[2] - COLLISION_ZONE
         X1 = position[0] + COLLISION_ZONE
         Y1 = position[1] + COLLISION_ZONE
@@ -108,24 +107,6 @@ class Camera:
                         return True
         return False
 
-
-
-
-        # x, y, z = position
-        # for c in [COLLISION_ZONE, -COLLISION_ZONE]:
-        #     for p in ([x, y, z], [x + c, y, z], [x, y + c, z], [x, y, z+c], [x, y-1, z], [x+c, y-1, z], [x, y-1, z], [x, y-1, z+c]):
-        #         for j in range(3):
-        #             if p[j] < 0:
-        #                 p[j] = -ceil(-p[j])
-        #             else:
-        #                 p[j] = int(p[j])
-        #         chunkPos = ((p[0]) // CHUNK_SIZE, (p[1]) // CHUNK_HEIGHT, (p[2]) // CHUNK_SIZE)
-        #         if (chunkPos[0], chunkPos[2]) in self.app.world.chunks:
-        #             if self.app.world.chunks[(chunkPos[0], chunkPos[2])].blocks[utils.flatten_coord(p[0] % CHUNK_SIZE, p[1] % CHUNK_HEIGHT, p[2] % CHUNK_SIZE)]:
-        #                     return True
-        # return False
-
-
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
 
@@ -150,44 +131,28 @@ class Camera:
             toMove[0] += moveForward[0]
             toMove[2] += moveForward[1]
 
-            # if not self.check_collision([self.position[0] + moveForward[0], self.position[1], self.position[2]]):
-            #     toMove[0] += moveForward[0]
-            # if not self.check_collision([self.position[0], self.position[1], self.position[2] + moveForward[1]]):
-            #     toMove[2] += moveForward[1]
         if key.S in self.app.held_keys:
             toMove[0] -= moveForward[0]
             toMove[2] -= moveForward[1]
-            # if not self.check_collision([self.position[0] - moveForward[0], self.position[1], self.position[2]]):
-            #     toMove[0] -= moveForward[0]
-            # if not self.check_collision([self.position[0], self.position[1], self.position[2] - moveForward[1]]):
-            #     toMove[2] -= moveForward[1]
+
         if key.A in self.app.held_keys:
             toMove[0] -= moveRight[0]
             toMove[2] -= moveRight[1]
-            # if not self.check_collision([self.position[0] - moveRight[0], self.position[1], self.position[2]]):
-            #     toMove[0] -= moveRight[0]
-            # if not self.check_collision([self.position[0], self.position[1], self.position[2] - moveRight[1]]):
-            #     toMove[2] -= moveRight[1]
+
         if key.D in self.app.held_keys:
             toMove[0] += moveRight[0]
             toMove[2] += moveRight[1]
-            # if not self.check_collision([self.position[0] + moveRight[0], self.position[1], self.position[2]]):
-            #     toMove[0] += moveRight[0]
-            # if not self.check_collision([self.position[0], self.position[1], self.position[2] + moveRight[1]]):
-            #     toMove[2] += moveRight[1]
+
         if key.SPACE in self.app.held_keys:
             if self.GRAVITY_ENABLED:
                 self.jumping = True
             else:
                 toMove[1] += velocity
-            # if not self.check_collision([self.position[0], self.position[1] + velocity, self.position[2]]):
-            #     self.position[1] += velocity
+
         if not self.GRAVITY_ENABLED:
             if key.LSHIFT in self.app.held_keys:
                 toMove[1] -= velocity
-                # if not self.check_collision([self.position[0], self.position[1] - velocity, self.position[2]]):
-                #     self.position[1] -= velocity
-        
+
         for j in range(3):
             if toMove[j] > velocity:
                 toMove[j] = velocity
@@ -211,7 +176,6 @@ class Camera:
 
             if not self.check_collision([self.position[0], self.position[1] - gravity_drop, self.position[2]]):
                 self.position[1] -= gravity_drop
-                print("GRAVITY IS DROPPING! " + str(self.position))
             else:
                 self.curr_gravity_time = 0
                 self.jumping = False
