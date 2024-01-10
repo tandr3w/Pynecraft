@@ -18,11 +18,16 @@ class Camera:
         self.pitch = pitch
         self.speed = SPEED
         self.curr_gravity_time = 0
-        self.GRAVITY_ENABLED = False
+        self.GRAVITY_ENABLED = True
+        self.fov = DEFAULT_FOV
         self.GRAVITY_SPEED = GRAVITY_SPEED
-        self.falling = False
+        self.jumping = False
         self.view_matrix = self.get_view_matrix()
         self.proj_matrix = self.get_projection_matrix()
+        
+
+        # 1 = increasing, 0 = decreasing
+        self.fovTransitionType = 0
 
     def up_speed(self):
         self.speed += 0.01
@@ -123,6 +128,21 @@ class Camera:
 
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
+
+        if key.LCTRL in self.app.held_keys:
+            velocity *= SPRINT_BOOST
+            self.fovTransitionType = 1
+        else:
+            self.fovTransitionType = 0
+
+        if self.fovTransitionType:
+            if self.fov < DEFAULT_FOV + 5:
+                self.fov += 1
+        else:
+            if self.fov > DEFAULT_FOV:
+                self.fov -= 1
+
+        self.proj_matrix = self.get_projection_matrix()
         moveForward = pyrr.vector.normalise(np.array([self.forward[0], self.forward[2]], dtype=np.float32)) * velocity
         moveRight = pyrr.vector.normalise(np.array([self.right[0], self.right[2]], dtype=np.float32)) * velocity
         toMove = [0, 0, 0]
@@ -156,7 +176,10 @@ class Camera:
             # if not self.check_collision([self.position[0], self.position[1], self.position[2] + moveRight[1]]):
             #     toMove[2] += moveRight[1]
         if key.SPACE in self.app.held_keys:
-            toMove[1] += velocity
+            if self.GRAVITY_ENABLED:
+                self.jumping = True
+            else:
+                toMove[1] += velocity
             # if not self.check_collision([self.position[0], self.position[1] + velocity, self.position[2]]):
             #     self.position[1] += velocity
         if not self.GRAVITY_ENABLED:
@@ -179,17 +202,24 @@ class Camera:
             self.position[2] += toMove[2]
 
         if self.GRAVITY_ENABLED and self.app.world.firstLoad and (self.position[0]//CHUNK_SIZE, self.position[2]//CHUNK_SIZE) in self.app.world.chunks:
-            gravity_drop = self.GRAVITY_SPEED*self.curr_gravity_time * self.app.delta_time
-            # print(gravity_drop)
+            gravity_drop = self.GRAVITY_SPEED*self.curr_gravity_time*self.app.delta_time
+            if self.jumping:
+                gravity_drop -= 5.6*self.app.delta_time
             self.curr_gravity_time += self.app.delta_time
-            if self.check_collision([self.position[0], self.position[1] - gravity_drop, self.position[2]]):
+            gravity_drop = min(gravity_drop, 0.9)
+            gravity_drop = max(gravity_drop, -0.9)
+
+            if not self.check_collision([self.position[0], self.position[1] - gravity_drop, self.position[2]]):
+                self.position[1] -= gravity_drop
+                print("GRAVITY IS DROPPING! " + str(self.position))
+            else:
                 self.curr_gravity_time = 0
-                self.position[1] += gravity_drop
-                print(self.position)
+                self.jumping = False
+
 
     def get_projection_matrix(self):
         return pyrr.matrix44.create_perspective_projection(
-            fovy = FOV, aspect = self.aspect_ratio, 
+            fovy = self.fov, aspect = self.aspect_ratio, 
             near = NEAR, far = FAR, dtype=np.float32
         )
 

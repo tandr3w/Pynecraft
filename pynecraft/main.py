@@ -1,5 +1,4 @@
 # TODO:
-# Fix movement
 # Add main menu
 # add a loading screen for when the world hasn't loaded yet
 

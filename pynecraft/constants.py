@@ -5,13 +5,15 @@ TPS = 40
 RENDER_DISTANCE = 4
 
 # Camera Settings
-FOV = 50
+DEFAULT_FOV = 50
 NEAR = 0.1
 FAR = 100
 SPEED = 0.03
 SENSITIVITY = 0.15
 COLLISION_ZONE = 0.2
-GRAVITY_SPEED = 9.81 # Blocks / Second^2
+GRAVITY_SPEED = 13 # Blocks / Second^2; original mc uses 13
+
+SPRINT_BOOST = 1.5
 
 
 CROSSHAIR_SIZE = 7
