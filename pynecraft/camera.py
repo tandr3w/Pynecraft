@@ -61,11 +61,11 @@ class Camera:
     # This method sucks, figure out how to do bounding boxes
     def check_collision(self, position):
         x1 = position[0] - COLLISION_ZONE
-        y1 = position[1] - 1
+        y1 = position[1] - 1.8
         z1 = position[2] - COLLISION_ZONE
         X1 = position[0] + COLLISION_ZONE
-        Y1 = position[1]
-        Z1 = position[1] + COLLISION_ZONE
+        Y1 = position[1] + COLLISION_ZONE
+        Z1 = position[2] + COLLISION_ZONE
 
         # Convert position to integers
         p = position[:]
@@ -75,9 +75,11 @@ class Camera:
             else:
                 p[j] = int(p[j])
 
-        # Check every block in a 3x3x3 radius around the player for collision (extremely stupid but works)
+        # print(p)
+
+        # Check every block in a 3x7x3 radius around the player for collision (extremely stupid but works)
         for xMod in range(-1, 2):
-            for yMod in range(-1, 2):
+            for yMod in range(-3, 4):
                 for zMod in range(-1, 2):
                     blockX = p[0] + xMod
                     blockY = p[1] + yMod
@@ -85,7 +87,7 @@ class Camera:
                     chunkPos = (blockX // CHUNK_SIZE, blockY // CHUNK_HEIGHT, blockZ // CHUNK_SIZE)
                     if (chunkPos[0], chunkPos[2]) in self.app.world.chunks:
                         if self.app.world.chunks[(chunkPos[0], chunkPos[2])].blocks[utils.flatten_coord(blockX % CHUNK_SIZE, blockY % CHUNK_HEIGHT, blockZ % CHUNK_SIZE)]:
-                            print((blockX, blockY, blockZ))
+                            # print((blockX, blockY, blockZ))
                             # Create bounding box for block
                             x2 = blockX
                             y2 = blockY
@@ -93,6 +95,7 @@ class Camera:
                             X2 = blockX + 1
                             Y2 = blockY + 1
                             Z2 = blockZ + 1
+
 
                             if self.overlap(x1, X1, x2, X2) and self.overlap(y1, Y1, y2, Y2) and self.overlap(z1, Z1, z2, Z2):
                                 return True

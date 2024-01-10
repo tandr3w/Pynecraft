@@ -16,6 +16,8 @@
 
 # Add installation instructions & requirements.txt
 
+# normalizing the movement is sus (e.g. when hugging a block)
+
 import pyglet
 from pyglet.window import key
 from OpenGL.GL import *
