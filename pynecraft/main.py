@@ -1,5 +1,4 @@
 # TODO:
-# Don't allow placing inside of yourself
 # Add main menu
 # add a loading screen for when the world hasn't loaded yet
 
@@ -100,6 +99,8 @@ class Pynecraft(pyglet.window.Window):
                 # Possibly in the future, check which block placement is closer rather than not allowing placement at all
                 if block[3][1] < 255:
                     self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = self.placingBlock
+                    if self.camera.check_collision([self.camera.position[0], self.camera.position[1], self.camera.position[2]]):
+                        self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = 0
                     self.world.build_chunk(chunkX, chunkZ) 
 
     def on_draw(self):

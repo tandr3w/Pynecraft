@@ -62,7 +62,6 @@ class Camera:
     def overlap(self, v1, V1, v2, V2):
         return v1 <= v2 <= V1 or v1 <= V2 <= V1 or v2 <= v1 <= V2 or v2 <= V1 <= V2
 
-    # This method sucks, figure out how to do bounding boxes
     def check_collision(self, position):
         x1 = position[0] - COLLISION_ZONE
         y1 = position[1] - 2 + 2*COLLISION_ZONE
