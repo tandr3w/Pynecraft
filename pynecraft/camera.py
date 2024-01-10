@@ -123,62 +123,69 @@ class Camera:
 
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
-        toMove = [0, 0, 0]
         moveForward = pyrr.vector.normalise(np.array([self.forward[0], self.forward[2]], dtype=np.float32)) * velocity
         moveRight = pyrr.vector.normalise(np.array([self.right[0], self.right[2]], dtype=np.float32)) * velocity
+        toMove = [0, 0, 0]
         if key.W in self.app.held_keys:
             toMove[0] += moveForward[0]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[0] -= moveForward[0]
             toMove[2] += moveForward[1]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[2] -= moveForward[1]
+
+            # if not self.check_collision([self.position[0] + moveForward[0], self.position[1], self.position[2]]):
+            #     toMove[0] += moveForward[0]
+            # if not self.check_collision([self.position[0], self.position[1], self.position[2] + moveForward[1]]):
+            #     toMove[2] += moveForward[1]
         if key.S in self.app.held_keys:
             toMove[0] -= moveForward[0]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[0] += moveForward[0]
             toMove[2] -= moveForward[1]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[2] += moveForward[1]
+            # if not self.check_collision([self.position[0] - moveForward[0], self.position[1], self.position[2]]):
+            #     toMove[0] -= moveForward[0]
+            # if not self.check_collision([self.position[0], self.position[1], self.position[2] - moveForward[1]]):
+            #     toMove[2] -= moveForward[1]
         if key.A in self.app.held_keys:
             toMove[0] -= moveRight[0]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[0] += moveRight[0]
             toMove[2] -= moveRight[1]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[2] += moveRight[1]
+            # if not self.check_collision([self.position[0] - moveRight[0], self.position[1], self.position[2]]):
+            #     toMove[0] -= moveRight[0]
+            # if not self.check_collision([self.position[0], self.position[1], self.position[2] - moveRight[1]]):
+            #     toMove[2] -= moveRight[1]
         if key.D in self.app.held_keys:
             toMove[0] += moveRight[0]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[0] -= moveRight[0]
             toMove[2] += moveRight[1]
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[2] -= moveRight[1]
+            # if not self.check_collision([self.position[0] + moveRight[0], self.position[1], self.position[2]]):
+            #     toMove[0] += moveRight[0]
+            # if not self.check_collision([self.position[0], self.position[1], self.position[2] + moveRight[1]]):
+            #     toMove[2] += moveRight[1]
         if key.SPACE in self.app.held_keys:
             toMove[1] += velocity
-            if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                toMove[1] -= velocity
+            # if not self.check_collision([self.position[0], self.position[1] + velocity, self.position[2]]):
+            #     self.position[1] += velocity
         if not self.GRAVITY_ENABLED:
             if key.LSHIFT in self.app.held_keys:
                 toMove[1] -= velocity
-                if self.check_collision([self.position[0] + toMove[0], self.position[1] + toMove[1], self.position[2] + toMove[2]]):
-                    toMove[1] += velocity
+                # if not self.check_collision([self.position[0], self.position[1] - velocity, self.position[2]]):
+                #     self.position[1] -= velocity
         
-        if toMove != [0, 0, 0]:
-            toMove = pyrr.vector.normalise(np.array([toMove[0], toMove[1], toMove[2]], dtype=np.float32)) * velocity
+        for j in range(3):
+            if toMove[j] > velocity:
+                toMove[j] = velocity
+            if toMove[j] < -velocity:
+                toMove[j] = -velocity
+            
+        if not self.check_collision([self.position[0] + toMove[0], self.position[1], self.position[2]]):
+            self.position[0] += toMove[0]
+        if not self.check_collision([self.position[0], self.position[1] + toMove[1], self.position[2]]):
+            self.position[1] += toMove[1]
+        if not self.check_collision([self.position[0], self.position[1], self.position[2] + toMove[2]]):
+            self.position[2] += toMove[2]
 
         if self.GRAVITY_ENABLED and self.app.world.firstLoad and (self.position[0]//CHUNK_SIZE, self.position[2]//CHUNK_SIZE) in self.app.world.chunks:
             gravity_drop = self.GRAVITY_SPEED*self.curr_gravity_time * self.app.delta_time
             # print(gravity_drop)
-            toMove[1] -= gravity_drop
             self.curr_gravity_time += self.app.delta_time
-            if self.check_collision([self.position[0], self.position[1] + toMove[1], self.position[2]]):
+            if self.check_collision([self.position[0], self.position[1] - gravity_drop, self.position[2]]):
                 self.curr_gravity_time = 0
-                toMove[1] += gravity_drop
-            print(self.position)
-        self.position[0] += toMove[0]
-        self.position[1] += toMove[1]
-        self.position[2] += toMove[2]
+                self.position[1] += gravity_drop
+                print(self.position)
 
     def get_projection_matrix(self):
         return pyrr.matrix44.create_perspective_projection(

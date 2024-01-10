@@ -1,4 +1,5 @@
 # TODO:
+# Fix movement
 # Add main menu
 # add a loading screen for when the world hasn't loaded yet
 
@@ -8,7 +9,6 @@
 # Basic Lighting / fog
 # More advanced terrain generation
 
-# Do actual good collision using bounding boxes
 # Swap the textures to not use that lame ass copied solution
 # Add a save system
 
@@ -80,7 +80,7 @@ class Pynecraft(pyglet.window.Window):
         glClear(GL_DEPTH_BUFFER_BIT)
         
         if self.world.firstLoad:
-            glClearColor(0.1, 0.2, 0.2, 1)
+            glClearColor(0.52, 0.81, 0.92, 1)
             self.set_exclusive()
 
         self.camera.update()
