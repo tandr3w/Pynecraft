@@ -106,12 +106,12 @@ def build_chunk(chunkX, chunkY, chunkZ, blocks):
                 if is_empty(chunkX, chunkZ, blocks, x, y-1, z):
                     occ = get_occlusion(chunkX, chunkZ, blocks, (x, y-1, z), 2)
                     index = add_face(vertex_data, index, (
-                        to_uint8(x, y, z, block_type, 1, 1),
-                        to_uint8(x+1, y, z+1, block_type, 1, occ[1]),
-                        to_uint8(x, y, z+1, block_type, 1, occ[2]),
                         to_uint8(x, y, z, block_type, 1, occ[0]),
-                        to_uint8(x+1, y, z, block_type, 1, occ[2]),
-                        to_uint8(x+1, y, z+1, block_type, 1, occ[3])
+                        to_uint8(x+1, y, z+1, block_type, 1, occ[2]),
+                        to_uint8(x, y, z+1, block_type, 1, occ[3]),
+                        to_uint8(x, y, z, block_type, 1, occ[0]),
+                        to_uint8(x+1, y, z, block_type, 1, occ[1]),
+                        to_uint8(x+1, y, z+1, block_type, 1, occ[2])
                     ))
 
                 # Right Face

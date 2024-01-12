@@ -1,6 +1,5 @@
 # TODO:
-# Basic Lighting:
-# Ambient Occlusion based on https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
+# Take chunk borders into account when shading 
 
 # Fog (OpenGL docs)
 
