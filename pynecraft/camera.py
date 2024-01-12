@@ -80,9 +80,9 @@ class Camera:
 
         # print(p)
 
-        # Check every block in a 3x7x3 radius around the player for collision (extremely stupid but works)
+        # Check every block in a 3x4x3 radius around the player for collision (extremely stupid but works)
         for xMod in range(-1, 2):
-            for yMod in range(-3, 4):
+            for yMod in range(-3, 2):
                 for zMod in range(-1, 2):
                     blockX = p[0] + xMod
                     blockY = p[1] + yMod

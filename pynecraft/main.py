@@ -1,6 +1,4 @@
 # TODO:
-# Add main menu
-# add a loading screen for when the world hasn't loaded yet
 
 # Delta time makes the movement kinda sus when it's laggy
 # Add an escape menu with options
@@ -9,6 +7,8 @@
 
 # Swap the textures to not use that lame ass copied solution
 # Add a save system
+
+# Convert images to resources
 
 # MUST DO:
 # Add installation instructions & requirements.txt
@@ -46,7 +46,6 @@ class Pynecraft(pyglet.window.Window):
 
         self.world = World(self)
         self.held_keys = set()
-        self.blockMaterial = Material("gfx/tex_array_1.png", isArr=True)
         self.placingBlock = 1
         self.exclusive = False
 
@@ -58,13 +57,76 @@ class Pynecraft(pyglet.window.Window):
 
         pyglet.clock.schedule_interval(self.update, 1 / TPS)
 
-        self.batch = pyglet.graphics.Batch()
+        # Intialize crosshair
+        self.crosshair_batch = pyglet.graphics.Batch()
         CROSSHAIR_COLOR = (100, 100, 100, 150)
-        self.line = pyglet.shapes.Line(self.WIN_SIZE[0]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, self.WIN_SIZE[0]//2 + CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, width=2, color=CROSSHAIR_COLOR, batch=self.batch)
-        self.line2 = pyglet.shapes.Line(self.WIN_SIZE[0]//2, self.WIN_SIZE[1]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[0]//2, self.WIN_SIZE[1] // 2 + CROSSHAIR_SIZE, width=2, color=CROSSHAIR_COLOR, batch=self.batch)
+        self.cross = pyglet.shapes.Line(self.WIN_SIZE[0]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, self.WIN_SIZE[0]//2 + CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, width=2, color=CROSSHAIR_COLOR, batch=self.crosshair_batch)
+        self.cross2 = pyglet.shapes.Line(self.WIN_SIZE[0]//2, self.WIN_SIZE[1]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[0]//2, self.WIN_SIZE[1] // 2 + CROSSHAIR_SIZE, width=2, color=CROSSHAIR_COLOR, batch=self.crosshair_batch)
+
+
+        # Initialize menu
+        self.menu_batch = pyglet.graphics.Batch()
+        self.background = pyglet.graphics.Group(order=0)
+        self.foreground = pyglet.graphics.Group(order=1)
+        self.textground = pyglet.graphics.Group(order=2)
+
+        self.menu_bg_img = pyglet.image.load('gfx/background.png')
+        self.menu_bg = pyglet.sprite.Sprite(self.menu_bg_img, x=0, y=0, batch=self.menu_batch, group=self.background)
+        self.menu_bg.update(scale=max(self.WIN_SIZE[0] / self.menu_bg.width, self.WIN_SIZE[1] / self.menu_bg.height))
+
+        self.logo_img = pyglet.image.load('gfx/logo.png')
+        self.logo = pyglet.sprite.Sprite(self.logo_img, x=0, y=0, batch=self.menu_batch, group=self.foreground)
+        self.logo.update(scale=self.WIN_SIZE[0] / self.logo.width)
+        self.logo.update(y=self.WIN_SIZE[1] - self.logo.height)
+
+        self.play_btn_img = pyglet.image.load('gfx/button.png')
+        self.play_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-self.logo.height-150, batch=self.menu_batch, group=self.foreground)
+        self.play_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.play_btn.width, scale_y=50/self.play_btn.height)
+        
+
+        self.loading_batch = pyglet.graphics.Batch()
+        self.loading_bg_img = pyglet.image.load('gfx/loading_bg.png')
+        self.loading_bg = pyglet.sprite.Sprite(self.loading_bg_img, x=0, y=0, batch=self.loading_batch, group=self.background)
+        self.loading_bg.update(scale=max(self.WIN_SIZE[0] / self.loading_bg.width, self.WIN_SIZE[1] / self.loading_bg.height))
+
+
+        pyglet.font.add_file('assets/minecraftia.ttf')
+        pyglet.font.load('Minecraftia')
+
+        self.play_btn_text = pyglet.text.Label('Play',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.play_btn.position[1] + 20,
+            anchor_x='center', anchor_y='center')
+
+        self.loading_texts = []
+
+        for i in range(4):
+            self.loading_texts.append(
+                pyglet.text.Label('Loading' + "."*i,
+                font_name='Minecraftia',
+                font_size=24,
+                x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]//2,
+                anchor_x='center', anchor_y='center')
+            )
+
+        self.time_since_animation = 0
+        self.animation_counter = 0
+
+        # 0 = menu, 1 = loading / game
+        self.screen_id = 0
+
+        # Must be loaded last since it changes OpenGL settings
+        self.blockMaterial = Material("gfx/tex_array_1.png", isArr=True)
 
         self.marker = BlockMarker(self)
         self.init_opengl()
+
+    # Check if a pyglet element is clicked
+    def is_clicked(self, element, mouseX, mouseY):
+        if mouseX > element.position[0] and mouseX < element.position[0] + element.width and mouseY > element.position[1] and mouseY < element.position[1] + element.height:
+            return True
+        return False
 
     def set_exclusive(self):
         super(Pynecraft, self).set_exclusive_mouse(False)
@@ -72,8 +134,6 @@ class Pynecraft(pyglet.window.Window):
         self.exclusive = True
 
     def init_opengl(self):
-        glClearColor(0.2, 0.1, 0.1, 1)
-
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_DEPTH_TEST)
@@ -106,32 +166,53 @@ class Pynecraft(pyglet.window.Window):
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
-        
-        if self.world.firstLoad:
-            glClearColor(0.52, 0.81, 0.92, 1)
-            self.set_exclusive()
 
-        if self.left_held:
-            self.curr_repeat_time += self.delta_time
-            if (self.past_repeat < FIRST_REPEAT_DELAY and self.past_repeat + self.curr_repeat_time >= FIRST_REPEAT_DELAY ) or (self.past_repeat >= FIRST_REPEAT_DELAY and self.curr_repeat_time >= REPEAT_DELAY):
-                self.break_selected_block()
-                self.past_repeat += self.curr_repeat_time
-                self.curr_repeat_time = 0
+        if self.screen_id == 0:
+            # self.crosshair_batch.draw()
+            glDisable(GL_DEPTH_TEST)
+            self.menu_batch.draw()
+            self.play_btn_text.draw()
+            glEnable(GL_DEPTH_TEST)
 
-        elif self.right_held:
-            self.curr_repeat_time += self.delta_time
-            if (self.past_repeat < FIRST_REPEAT_DELAY and self.past_repeat + self.curr_repeat_time >= FIRST_REPEAT_DELAY ) or (self.past_repeat >= FIRST_REPEAT_DELAY and self.curr_repeat_time >= REPEAT_DELAY):
-                self.place_block()
-                self.past_repeat += self.curr_repeat_time
-                self.curr_repeat_time = 0
+        elif self.screen_id == 1:
+            if self.world.firstLoad:
+                glClearColor(0.52, 0.81, 0.92, 1)
+                self.set_exclusive()
+            else:
+                glDisable(GL_DEPTH_TEST)
+                self.loading_batch.draw()
+                self.loading_texts[self.animation_counter].draw()
 
-        self.camera.update()
-        self.world.render_chunks(self.camera.position, isAsync=True)
-        self.batch.draw()
-        lookingAt = self.get_selected_block()
-        if not lookingAt == None:
-            self.marker.position = np.array([int(lookingAt[0]), int(lookingAt[1]), int(lookingAt[2])])
-            self.marker.draw()
+                # Animate loading text
+                self.time_since_animation += self.delta_time
+                if self.time_since_animation > 0.5:
+                    self.time_since_animation = 0
+                    self.animation_counter += 1
+                    self.animation_counter %= 4
+
+                glEnable(GL_DEPTH_TEST)
+
+            if self.left_held:
+                self.curr_repeat_time += self.delta_time
+                if (self.past_repeat < FIRST_REPEAT_DELAY and self.past_repeat + self.curr_repeat_time >= FIRST_REPEAT_DELAY ) or (self.past_repeat >= FIRST_REPEAT_DELAY and self.curr_repeat_time >= REPEAT_DELAY):
+                    self.break_selected_block()
+                    self.past_repeat += self.curr_repeat_time
+                    self.curr_repeat_time = 0
+
+            elif self.right_held:
+                self.curr_repeat_time += self.delta_time
+                if (self.past_repeat < FIRST_REPEAT_DELAY and self.past_repeat + self.curr_repeat_time >= FIRST_REPEAT_DELAY ) or (self.past_repeat >= FIRST_REPEAT_DELAY and self.curr_repeat_time >= REPEAT_DELAY):
+                    self.place_block()
+                    self.past_repeat += self.curr_repeat_time
+                    self.curr_repeat_time = 0
+
+            self.camera.update()
+            self.world.render_chunks(self.camera.position, isAsync=True)
+            self.crosshair_batch.draw()
+            lookingAt = self.get_selected_block()
+            if not lookingAt == None:
+                self.marker.position = np.array([int(lookingAt[0]), int(lookingAt[1]), int(lookingAt[2])])
+                self.marker.draw()
 
     def get_selected_block(self):
         if self.world.firstLoad:
@@ -170,51 +251,59 @@ class Pynecraft(pyglet.window.Window):
                     prevFloat = (floatPos[0], floatPos[1], floatPos[2])
 
     def on_key_press(self, symbol, modifiers):
-        self.held_keys.add(symbol)
         if symbol == key.ESCAPE:
             self.close()
+        if self.world.firstLoad:
+            self.held_keys.add(symbol)
+
+            if symbol == key.EQUAL:
+                self.camera.up_speed()
+            elif symbol == key.MINUS:
+                self.camera.down_speed()
+            elif symbol == key._1:
+                self.placingBlock = 1
+            elif symbol == key._2:
+                self.placingBlock = 2
+            elif symbol == key._3:
+                self.placingBlock = 3
+            elif symbol == key._4:
+                self.placingBlock = 4
+            elif symbol == key._5:
+                self.placingBlock = 5
+            elif symbol == key._6:
+                self.placingBlock = 6
+            elif symbol == key._7:
+                self.placingBlock = 7
+            elif symbol == key.G:
+                self.camera.GRAVITY_ENABLED = not self.camera.GRAVITY_ENABLED
 
     def on_key_release(self, symbol, modifiers):
-        self.held_keys.remove(symbol)
-        if symbol == key.ESCAPE:
-            self.close()
-        elif symbol == key.EQUAL:
-            self.camera.up_speed()
-        elif symbol == key.MINUS:
-            self.camera.down_speed()
-        elif symbol == key._1:
-            self.placingBlock = 1
-        elif symbol == key._2:
-            self.placingBlock = 2
-        elif symbol == key._3:
-            self.placingBlock = 3
-        elif symbol == key._4:
-            self.placingBlock = 4
-        elif symbol == key._5:
-            self.placingBlock = 5
-        elif symbol == key._6:
-            self.placingBlock = 6
-        elif symbol == key._7:
-            self.placingBlock = 7
-        elif symbol == key.G:
-            self.camera.GRAVITY_ENABLED = not self.camera.GRAVITY_ENABLED
+        if self.world.firstLoad:
+            self.held_keys.remove(symbol)
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if self.exclusive:
+        if self.exclusive and self.world.firstLoad:
             self.camera.rotate(-dx, dy)
             self.camera.update_camera_vectors()
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
-            self.set_exclusive()
-            self.left_held = True
-            self.break_selected_block()
+            if self.screen_id == 0 and self.is_clicked(self.play_btn, x, y):
+                # Start game
+                self.screen_id = 1
+            if self.world.firstLoad:
+                self.set_exclusive()
+                self.left_held = True
+                self.break_selected_block()
 
         elif button == pyglet.window.mouse.RIGHT and self.exclusive:
-            self.right_held = True
-            self.place_block()
+            if self.world.firstLoad:
+                self.right_held = True
+                self.place_block()
 
     def on_mouse_release(self, x, y, button, modifiers):
+        if not self.world.firstLoad:
+            return
         if button == pyglet.window.mouse.LEFT:
             self.left_held = False
 
