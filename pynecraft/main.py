@@ -215,10 +215,14 @@ class Pynecraft(pyglet.window.Window):
             return True
         return False
 
-    def set_exclusive(self):
-        super(Pynecraft, self).set_exclusive_mouse(False)
-        super(Pynecraft, self).set_exclusive_mouse(True)
-        self.exclusive = True
+    def set_exclusive(self, val=True):
+        if val == True:
+            super(Pynecraft, self).set_exclusive_mouse(False)
+            super(Pynecraft, self).set_exclusive_mouse(True)
+            self.exclusive = True
+        else:
+            super(Pynecraft, self).set_exclusive_mouse(False)
+            self.exclusive = False
 
     def init_opengl(self):
         glEnable(GL_BLEND)
@@ -354,10 +358,13 @@ class Pynecraft(pyglet.window.Window):
             if self.screen_id == 2:
                 if self.world.firstLoad:
                     self.screen_id = 1
+                    self.set_exclusive(True)
                 else:
                     self.screen_id = 0
             else:
                 self.screen_id = 2
+                self.set_exclusive(False)
+
         if self.world.firstLoad:
             self.held_keys.add(symbol)
             if symbol == key.EQUAL:
