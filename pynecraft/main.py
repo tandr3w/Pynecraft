@@ -1,7 +1,5 @@
 # TODO:
-# Noclip setting
-# Only allow sprinting while holding W, and make it last until you release W
-# Shifting
+# Sneaking
 
 # Basic Lighting:
 # Ambient Occlusion based on https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/

@@ -25,6 +25,7 @@ class Camera:
         self.jumping = False
         self.view_matrix = self.get_view_matrix()
         self.proj_matrix = self.get_projection_matrix()
+        self.sprinting = False
         
         # 1 = increasing, 0 = decreasing
         self.fovTransitionType = 0
@@ -112,11 +113,13 @@ class Camera:
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
 
-        if key.LCTRL in self.app.held_keys:
+        if key.LCTRL in self.app.held_keys and key.W in self.app.held_keys or (self.sprinting and key.W in self.app.held_keys):
             velocity *= SPRINT_BOOST
             self.fovTransitionType = 1
+            self.sprinting = True
         else:
             self.fovTransitionType = 0
+            self.sprinting = False
 
         if self.fovTransitionType:
             if self.fov < DEFAULT_FOV + 5:
