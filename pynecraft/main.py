@@ -137,7 +137,7 @@ class Pynecraft(pyglet.window.Window):
             font_size=12,
             x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 180,
             anchor_x='center', anchor_y='center'),
-            pyglet.text.Label('Press CTRL to sprint',
+            pyglet.text.Label('CTRL to sprint, SHIFT to sneak',
             font_name='Minecraftia',
             font_size=12,
             x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-210,

@@ -9,6 +9,7 @@ from math import ceil
 class Camera:
     def __init__(self, app, position=(0, 70, 0), yaw=0, pitch=0):
         self.app = app
+        self.sneaking = False
         self.aspect_ratio = app.WIN_SIZE[0] / app.WIN_SIZE[1]
         self.position = pyrr.vector3.create(x=position[0], y=position[1], z=position[2], dtype=np.float32)
         self.up = pyrr.vector3.create(x=0, y=1, z=0, dtype=np.float32)
@@ -27,7 +28,7 @@ class Camera:
         self.proj_matrix = self.get_projection_matrix()
         self.sprinting = False
         
-        # 1 = increasing, 0 = decreasing
+        # 1 = sprinting, 0 = decreasing
         self.fovTransitionType = 0
 
     def up_speed(self):
@@ -113,7 +114,7 @@ class Camera:
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
 
-        if key.LCTRL in self.app.held_keys and key.W in self.app.held_keys or (self.sprinting and key.W in self.app.held_keys):
+        if not self.sneaking and key.LCTRL in self.app.held_keys and key.W in self.app.held_keys or (self.sprinting and key.W in self.app.held_keys):
             velocity *= SPRINT_BOOST
             self.fovTransitionType = 1
             self.sprinting = True
@@ -121,14 +122,25 @@ class Camera:
             self.fovTransitionType = 0
             self.sprinting = False
 
-        if self.fovTransitionType:
+        if key.LSHIFT in self.app.held_keys and self.GRAVITY_ENABLED == True:
+            self.sprinting = False
+            velocity *= 0.5
+            self.sneaking = True
+        else:
+            self.sneaking = False            
+
+        if self.fovTransitionType == 1:
             if self.fov < DEFAULT_FOV + 5:
-                self.fov += 1
+                self.fov += 1   
         else:
             if self.fov > DEFAULT_FOV:
                 self.fov -= 1
+            if self.fov < DEFAULT_FOV:
+                self.fov += 1
 
         self.proj_matrix = self.get_projection_matrix()
+        self.view_matrix = self.get_view_matrix()
+
         moveForward = pyrr.vector.normalise(np.array([self.forward[0], self.forward[2]], dtype=np.float32)) * velocity
         moveRight = pyrr.vector.normalise(np.array([self.right[0], self.right[2]], dtype=np.float32)) * velocity
         toMove = [0, 0, 0]
@@ -193,4 +205,9 @@ class Camera:
         )
 
     def get_view_matrix(self):
+        if self.sneaking:
+            self.position[1] -= 0.1
+            res = pyrr.matrix44.create_look_at(self.position, self.position + self.forward, self.up, dtype=np.float32)
+            self.position[1] += 0.1
+            return res
         return pyrr.matrix44.create_look_at(self.position, self.position + self.forward, self.up, dtype=np.float32)
