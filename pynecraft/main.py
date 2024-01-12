@@ -1,6 +1,4 @@
 # TODO:
-# Sneaking
-
 # Basic Lighting:
 # Ambient Occlusion based on https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
 
@@ -13,13 +11,7 @@
 # Comment and organize code
 
 # Swap the textures to not use that lame ass copied solution
-# Add new block types
-
-# Probably not gonna do these:
-# Add a save system
-# Add an escape menu with options
-# Add a hotbar
-
+# Make sure you know how everything works
 
 import pyglet
 from pyglet.window import key
@@ -296,7 +288,8 @@ class Pynecraft(pyglet.window.Window):
                     self.past_repeat += self.curr_repeat_time
                     self.curr_repeat_time = 0
 
-            self.camera.update()
+            if self.firstLoad:
+                self.camera.update()
             self.world.render_chunks(self.camera.position, isAsync=True)
             self.crosshair_batch.draw()
             lookingAt = self.get_selected_block()

@@ -113,8 +113,7 @@ class Camera:
 
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
-
-        if not self.sneaking and key.LCTRL in self.app.held_keys and key.W in self.app.held_keys or (self.sprinting and key.W in self.app.held_keys):
+        if not self.sneaking and key.LCTRL in self.app.held_keys and key.W in self.app.held_keys:
             velocity *= SPRINT_BOOST
             self.fovTransitionType = 1
             self.sprinting = True
