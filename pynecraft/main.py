@@ -122,47 +122,62 @@ class Pynecraft(pyglet.window.Window):
             pyglet.text.Label('Press WASD to move',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 100,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 90,
             anchor_x='center', anchor_y='center'),
-            pyglet.text.Label('Left click to break blocks',
+            pyglet.text.Label('Left click to break',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 130,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 120,
             anchor_x='center', anchor_y='center'),
             pyglet.text.Label('Right click to place blocks',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 160,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 150,
             anchor_x='center', anchor_y='center'),
             pyglet.text.Label('Press SPACE to jump',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 190,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 180,
             anchor_x='center', anchor_y='center'),
             pyglet.text.Label('Press CTRL to sprint',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-220,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-210,
             anchor_x='center', anchor_y='center'),
             pyglet.text.Label('Press G to toggle gravity',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-250,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-240,
             anchor_x='center', anchor_y='center'),
             pyglet.text.Label('Press N to toggle noclip',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-280,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-270,
             anchor_x='center', anchor_y='center'),
             pyglet.text.Label('Change placed blocks with number keys',
             font_name='Minecraftia',
             font_size=12,
-            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-310,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-300,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press ESC to quit',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-330,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press + and - to change speed',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-360,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press H to open this menu',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-390,
             anchor_x='center', anchor_y='center')
         ]
 
         self.help_batch = pyglet.graphics.Batch()
-        self.back_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-400, batch=self.help_batch, group=self.foreground)
+        self.back_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-460, batch=self.help_batch, group=self.foreground)
         self.back_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.back_btn.width, scale_y=50/self.back_btn.height)
 
         self.back_btn_text = pyglet.text.Label('Back',
@@ -335,9 +350,16 @@ class Pynecraft(pyglet.window.Window):
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
             self.close()
+        elif symbol == key.H:
+            if self.screen_id == 2:
+                if self.world.firstLoad:
+                    self.screen_id = 1
+                else:
+                    self.screen_id = 0
+            else:
+                self.screen_id = 2
         if self.world.firstLoad:
             self.held_keys.add(symbol)
-
             if symbol == key.EQUAL:
                 self.camera.up_speed()
             elif symbol == key.MINUS:
@@ -382,7 +404,10 @@ class Pynecraft(pyglet.window.Window):
                 self.screen_id = 2
             
             elif self.screen_id == 2 and self.is_clicked(self.back_btn, x, y):
-                self.screen_id = 0
+                if self.world.firstLoad:
+                    self.screen_id = 1
+                else:
+                    self.screen_id = 0
 
             if self.world.firstLoad:
                 self.set_exclusive()
