@@ -1,19 +1,26 @@
 # TODO:
+# Noclip setting
+# Only allow sprinting while holding W, and make it last until you release W
+# Shifting
 
-# Delta time makes the movement kinda sus when it's laggy
-# Add an escape menu with options
-# Basic Lighting / fog
+# Basic Lighting:
+# Ambient Occlusion based on https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
+
+# Fog (OpenGL docs)
+
 # More advanced terrain generation
 
-# Swap the textures to not use that lame ass copied solution
-# Add a save system
-
-# Convert images to resources
-
-# MUST DO:
 # Add installation instructions & requirements.txt
-# Comment code
+# Convert images to resources - make it distributable
+# Comment and organize code
 
+# Swap the textures to not use that lame ass copied solution
+# Add new block types
+
+# Probably not gonna do these:
+# Add a save system
+# Add an escape menu with options
+# Add a hotbar
 
 
 import pyglet
@@ -82,13 +89,14 @@ class Pynecraft(pyglet.window.Window):
         self.play_btn_img = pyglet.image.load('gfx/button.png')
         self.play_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-self.logo.height-150, batch=self.menu_batch, group=self.foreground)
         self.play_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.play_btn.width, scale_y=50/self.play_btn.height)
-        
 
         self.loading_batch = pyglet.graphics.Batch()
         self.loading_bg_img = pyglet.image.load('gfx/loading_bg.png')
         self.loading_bg = pyglet.sprite.Sprite(self.loading_bg_img, x=0, y=0, batch=self.loading_batch, group=self.background)
         self.loading_bg.update(scale=max(self.WIN_SIZE[0] / self.loading_bg.width, self.WIN_SIZE[1] / self.loading_bg.height))
 
+        self.controls_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-self.logo.height-225, batch=self.menu_batch, group=self.foreground)
+        self.controls_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.controls_btn.width, scale_y=50/self.controls_btn.height)
 
         pyglet.font.add_file('assets/minecraftia.ttf')
         pyglet.font.load('Minecraftia')
@@ -97,6 +105,70 @@ class Pynecraft(pyglet.window.Window):
             font_name='Minecraftia',
             font_size=16,
             x=self.WIN_SIZE[0]//2, y=self.play_btn.position[1] + 20,
+            anchor_x='center', anchor_y='center')
+
+        self.controls_btn_text = pyglet.text.Label('How To Play',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.controls_btn.position[1] + 20,
+            anchor_x='center', anchor_y='center')
+
+        self.help_texts = [
+            pyglet.text.Label('CONTROLS',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 50, color=(255, 255, 0, 255),
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press WASD to move',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 100,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Left click to break blocks',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 130,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Right click to place blocks',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 160,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press SPACE to jump',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1] - 190,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press CTRL to sprint',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-220,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press G to toggle gravity',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-250,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Press N to toggle noclip',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-280,
+            anchor_x='center', anchor_y='center'),
+            pyglet.text.Label('Change placed blocks with number keys',
+            font_name='Minecraftia',
+            font_size=12,
+            x=self.WIN_SIZE[0]//2, y=self.WIN_SIZE[1]-310,
+            anchor_x='center', anchor_y='center')
+        ]
+
+        self.help_batch = pyglet.graphics.Batch()
+        self.back_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-400, batch=self.help_batch, group=self.foreground)
+        self.back_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.back_btn.width, scale_y=50/self.back_btn.height)
+
+        self.back_btn_text = pyglet.text.Label('Back',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.back_btn.position[1] + 20,
             anchor_x='center', anchor_y='center')
 
         self.loading_texts = []
@@ -113,7 +185,7 @@ class Pynecraft(pyglet.window.Window):
         self.time_since_animation = 0
         self.animation_counter = 0
 
-        # 0 = menu, 1 = loading / game
+        # 0 = menu, 1 = loading / game, 2 = how to play
         self.screen_id = 0
 
         # Must be loaded last since it changes OpenGL settings
@@ -172,6 +244,7 @@ class Pynecraft(pyglet.window.Window):
             glDisable(GL_DEPTH_TEST)
             self.menu_batch.draw()
             self.play_btn_text.draw()
+            self.controls_btn_text.draw()
             glEnable(GL_DEPTH_TEST)
 
         elif self.screen_id == 1:
@@ -213,6 +286,15 @@ class Pynecraft(pyglet.window.Window):
             if not lookingAt == None:
                 self.marker.position = np.array([int(lookingAt[0]), int(lookingAt[1]), int(lookingAt[2])])
                 self.marker.draw()
+
+        elif self.screen_id == 2:
+            glDisable(GL_DEPTH_TEST)
+            for textline in self.help_texts:
+                textline.draw()
+            self.help_batch.draw()
+            self.back_btn_text.draw()
+            glEnable(GL_DEPTH_TEST)
+
 
     def get_selected_block(self):
         if self.world.firstLoad:
@@ -276,6 +358,10 @@ class Pynecraft(pyglet.window.Window):
                 self.placingBlock = 7
             elif symbol == key.G:
                 self.camera.GRAVITY_ENABLED = not self.camera.GRAVITY_ENABLED
+            elif symbol == key.N:
+                self.camera.NOCLIP_ENABLED = not self.camera.NOCLIP_ENABLED
+                if self.camera.NOCLIP_ENABLED:
+                    self.camera.GRAVITY_ENABLED = False
 
     def on_key_release(self, symbol, modifiers):
         if self.world.firstLoad:
@@ -291,6 +377,13 @@ class Pynecraft(pyglet.window.Window):
             if self.screen_id == 0 and self.is_clicked(self.play_btn, x, y):
                 # Start game
                 self.screen_id = 1
+
+            elif self.screen_id == 0 and self.is_clicked(self.controls_btn, x, y):
+                self.screen_id = 2
+            
+            elif self.screen_id == 2 and self.is_clicked(self.back_btn, x, y):
+                self.screen_id = 0
+
             if self.world.firstLoad:
                 self.set_exclusive()
                 self.left_held = True
@@ -314,9 +407,6 @@ class Pynecraft(pyglet.window.Window):
             self.past_repeat = 0
         
         self.curr_repeat_time = 0
-
-    
-    
 
 
 if __name__ == '__main__':
