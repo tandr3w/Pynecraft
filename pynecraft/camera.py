@@ -175,13 +175,16 @@ class Camera:
                 toMove[j] = velocity
             if toMove[j] < -velocity:
                 toMove[j] = -velocity
-            
+        
+
         if not self.check_collision([self.position[0] + toMove[0], self.position[1], self.position[2]]):
-            self.position[0] += toMove[0]
-        if not self.check_collision([self.position[0], self.position[1] + toMove[1], self.position[2]]):
+            if self.jumping or (not self.sneaking) or self.check_collision([self.position[0] + toMove[0], self.position[1] - 0.1, self.position[2]]):
+                self.position[0] += toMove[0]
+        if not self.check_collision([self.position[0], self.position[1] + toMove[1], self.position[2]]):            
             self.position[1] += toMove[1]
         if not self.check_collision([self.position[0], self.position[1], self.position[2] + toMove[2]]):
-            self.position[2] += toMove[2]
+            if self.jumping or (not self.sneaking) or self.check_collision([self.position[0], self.position[1] - 0.1, self.position[2] + toMove[2]]):
+                self.position[2] += toMove[2]
 
         if self.GRAVITY_ENABLED and self.app.world.firstLoad and (self.position[0]//CHUNK_SIZE, self.position[2]//CHUNK_SIZE) in self.app.world.chunks:
             gravity_drop = self.GRAVITY_SPEED*self.curr_gravity_time*self.app.delta_time
