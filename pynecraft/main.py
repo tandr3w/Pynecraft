@@ -288,7 +288,7 @@ class Pynecraft(pyglet.window.Window):
                     self.past_repeat += self.curr_repeat_time
                     self.curr_repeat_time = 0
 
-            if self.firstLoad:
+            if self.world.firstLoad:
                 self.camera.update()
             self.world.render_chunks(self.camera.position, isAsync=True)
             self.crosshair_batch.draw()
