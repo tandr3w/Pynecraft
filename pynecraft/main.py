@@ -1,10 +1,12 @@
 # TODO:
-# Add installation instructions & requirements.txt
-# Convert images to resources - make it distributable
+
+# Add installation instructions & requirements.txt, make it distributable
 # Comment and organize code
 
 # Swap the textures to not use that lame ass copied solution
 # Make sure you know how everything works
+
+# Fix camera bug
 
 import pyglet
 from pyglet.window import key
@@ -309,7 +311,7 @@ class Pynecraft(pyglet.window.Window):
                 floatPos = [self.camera.position[0] + self.camera.forward[0] * 0.05 * i, self.camera.position[1] + self.camera.forward[1] * 0.05 * i, self.camera.position[2] + self.camera.forward[2] * 0.05 * i]
                 # print(currPos)
                 for j in range(3):
-                    if currPos[j] < 0:
+                    if floatPos[j] < 0:
                         currPos[j] = -ceil(-floatPos[j])
                     else:
                         currPos[j] = int(floatPos[j])
@@ -323,7 +325,7 @@ class Pynecraft(pyglet.window.Window):
                                      (currPos[0], currPos[1]+1, currPos[2]), (currPos[0], currPos[1]-1, currPos[2]),
                                      (currPos[0], currPos[1], currPos[2]+1), (currPos[0], currPos[1], currPos[2]-1)]
                             for newPrev in adjacent:
-                                # Distance between twowwwwwwww 3d points, add 0.5 to get center of block
+                                # Distance between two 3d points, add 0.5 to get center of block
                                 newDist = sqrt(abs(prevFloat[0]-(newPrev[0]+0.5))**2 + abs(prevFloat[1]-(newPrev[1]+0.5))**2 + abs(prevFloat[2]-(newPrev[2]+0.5))**2)
                                 if newDist < minDist:
                                     minDist = newDist
