@@ -14,7 +14,8 @@ flat out int faceid;
 flat out int blockid;
 out float shading;
 
-const float occ_vals[4] = float[4](0.1, 0.4, 0.7, 1.0);
+// Create the illusion of shading
+const float shading_vals[6] = float[6](1.0, 0.65, 0.65, 0.8, 0.65, 0.8);
 
 const vec2 coords[12] = vec2[12](
     vec2(1, 0), vec2(1, 1), vec2(0, 1), vec2(1, 0), vec2(0, 1), vec2(0, 0), // Top, Right, Back faces
@@ -26,6 +27,6 @@ void main()
     texCoord = coords[gl_VertexID % 6 + (face_id & 1) * 6];
     gl_Position = m_proj * m_view * m_model * vec4(vertexPos, 1);
     faceid = face_id;
-    shading = occ_vals[occ_id];
+    shading = shading_vals[face_id];
     blockid = block_type;
 }

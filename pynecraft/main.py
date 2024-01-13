@@ -1,5 +1,4 @@
 # TODO:
-# Fog (OpenGL docs)
 # Take chunk borders into account when shading 
 
 # More advanced terrain generation

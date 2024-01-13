@@ -7,29 +7,33 @@ from OpenGL.GL import *
 import utils
 from chunk_builder import flatten_coord, to_uint8, is_empty, add_face, build_chunk
 
-def chunk_provider(chunkX, chunkZ, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk):
+def chunk_provider(chunkX, chunkZ, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, blocks=False, blocksOnly=False, neighbors=[[0, 0, 0], [0, 0, 0], [0, 0, 0]]):
     import glm
     from random import randint
     import numpy as np
 
-    blocks = np.zeros(CHUNK_SIZE ** 2 * CHUNK_HEIGHT, dtype='uint8')
-    for x in range(CHUNK_SIZE):
-        for z in range(CHUNK_SIZE):
-            # 0.02 - Scale, higher = smaller hills in the xy direction (less fat)
-            # 8 - Amplitude, higher = taller hills, lower valleys
-            # 32 - Sea level
-            local_height = int(glm.simplex(glm.vec2(chunkX*CHUNK_SIZE + x, chunkZ*CHUNK_SIZE + z) * 0.02) * 8 + 64)
-            if local_height < 0:
-                continue
-            for y in range(min(local_height, CHUNK_HEIGHT)):
-                if local_height - y <= 1:
-                    blocks[flatten_coord(x, y, z)] = 2
-                elif local_height - y <= 3:
-                    blocks[flatten_coord(x, y, z)] = 3
-                else:
-                    blocks[flatten_coord(x, y, z)] = randint(4, 7)
+    if blocks == False:
+        blocks = np.zeros(CHUNK_SIZE ** 2 * CHUNK_HEIGHT, dtype='uint8')
+        for x in range(CHUNK_SIZE):
+            for z in range(CHUNK_SIZE):
+                # 0.02 - Scale, higher = smaller hills in the xy direction (less fat)
+                # 8 - Amplitude, higher = taller hills, lower valleys
+                # 32 - Sea level
+                local_height = int(glm.simplex(glm.vec2(chunkX*CHUNK_SIZE + x, chunkZ*CHUNK_SIZE + z) * 0.02) * 8 + 64)
+                if local_height < 0:
+                    continue
+                for y in range(min(local_height, CHUNK_HEIGHT)):
+                    if local_height - y <= 1:
+                        blocks[flatten_coord(x, y, z)] = 2
+                    elif local_height - y <= 3:
+                        blocks[flatten_coord(x, y, z)] = 3
+                    else:
+                        blocks[flatten_coord(x, y, z)] = randint(4, 7)
 
-    return chunkX, chunkZ, blocks, build_chunk(chunkX, 0, chunkZ, blocks)
+    if blocksOnly:
+        return chunkX, chunkZ, blocks, False
+    else:
+        return chunkX, chunkZ, blocks, build_chunk(chunkX, 0, chunkZ, blocks)
     
 
 class World:
@@ -62,6 +66,9 @@ class World:
         return False
 
     def render_chunks(self, position, isAsync=False):
+
+        # Only allow chunks to be built if all their neighbors have blocks loaded. Otherwise, add the others to the gen queue with blocksOnly = True, and build the current chunk with blocksOnly = True
+        # 
         chunk_pos = (int(position[0] // CHUNK_SIZE), int(position[2] // CHUNK_SIZE))
         for x in range(int(chunk_pos[0] - RENDER_DISTANCE), int(chunk_pos[0] + RENDER_DISTANCE + 1)):
             for z in range(int(chunk_pos[1] - RENDER_DISTANCE), int(chunk_pos[1] + RENDER_DISTANCE + 1)):

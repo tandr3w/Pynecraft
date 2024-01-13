@@ -22,6 +22,7 @@ class Chunk:
         self.material = self.app.blockMaterial
         self.vbo = None
         self.vao = None
+        self.built = False
         self.shader = self.app.shader.shaders["chunk"]
         self.model_matrix = self.get_model_matrix()
         self.chunkPos = [position[0] // CHUNK_SIZE, position[1] // CHUNK_SIZE, position[2] // CHUNK_SIZE]
@@ -34,7 +35,7 @@ class Chunk:
         if not len(vertices):
             vertices = build_chunk(self.chunkPos[0], self.chunkPos[1], self.chunkPos[2], self.blocks)
 
-        self.vertex_count = len(vertices) // 6
+        self.vertex_count = len(vertices) // 5
         vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
@@ -45,13 +46,11 @@ class Chunk:
         glBindVertexArray(vao)
 
         glEnableVertexAttribArray(0)
-        glVertexAttribIPointer(0, 3, GL_UNSIGNED_BYTE, 6, ctypes.c_void_p(0))
+        glVertexAttribIPointer(0, 3, GL_UNSIGNED_BYTE, 5, ctypes.c_void_p(0))
         glEnableVertexAttribArray(1)
-        glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, 6, ctypes.c_void_p(3))
+        glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, 5, ctypes.c_void_p(3))
         glEnableVertexAttribArray(2)
-        glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, 6, ctypes.c_void_p(4))
-        glEnableVertexAttribArray(3)
-        glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, 6, ctypes.c_void_p(5))
+        glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, 5, ctypes.c_void_p(4))
         return vao
 
     def get_model_matrix(self): # The actual transformations of the shape

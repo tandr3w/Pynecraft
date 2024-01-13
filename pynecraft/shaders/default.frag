@@ -15,6 +15,7 @@ void main()
 {
     // gl_FragCoord.z / gl_FragCoord.w is the distance to the camera
     // https://opengl-notes.readthedocs.io/en/latest/topics/texturing/aliasing.html
+    
     float dist = gl_FragCoord.z / gl_FragCoord.w;
     float fog_factor = (fog_maxdist - dist) / (fog_maxdist - fog_mindist);
     fog_factor = clamp(fog_factor, 0.0, 1.0);
