@@ -1,8 +1,9 @@
-        # self.menu_bg_img = pyglet.image.load('gfx/background.png')
-        # self.menu_bg = pyglet.sprite.Sprite(self.menu_bg_img, x=0, y=0, batch=self.menu_batch, group=self.background)
-        # self.menu_bg.update(scale=max(self.WIN_SIZE[0] / self.menu_bg.width, self.WIN_SIZE[1] / self.menu_bg.height))
-
-        # self.logo_img = pyglet.image.load('gfx/logo.png')
-        # self.logo = pyglet.sprite.Sprite(self.logo_img, x=0, y=0, batch=self.menu_batch, group=self.foreground)
-        # self.logo.update(scale=self.WIN_SIZE[0] / self.logo.width)
-        # self.logo.update(y=self.WIN_SIZE[1] - self.logo.height)
+            if local_height < 0:
+                continue
+            for y in range(min(local_height, CHUNK_HEIGHT)):
+                if local_height - y <= 1:
+                    blocks[flatten_coord(x, y, z)] = 2
+                elif local_height - y <= 3:
+                    blocks[flatten_coord(x, y, z)] = 3
+                else:
+                    blocks[flatten_coord(x, y, z)] = randint(4, 7)

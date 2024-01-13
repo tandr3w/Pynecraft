@@ -1,6 +1,4 @@
 # TODO:
-# Take chunk borders into account when shading 
-
 # More advanced terrain generation
 
 # Add installation instructions & requirements.txt
@@ -56,7 +54,6 @@ class Pynecraft(pyglet.window.Window):
         CROSSHAIR_COLOR = (100, 100, 100, 150)
         self.cross = pyglet.shapes.Line(self.WIN_SIZE[0]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, self.WIN_SIZE[0]//2 + CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, width=2, color=CROSSHAIR_COLOR, batch=self.crosshair_batch)
         self.cross2 = pyglet.shapes.Line(self.WIN_SIZE[0]//2, self.WIN_SIZE[1]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[0]//2, self.WIN_SIZE[1] // 2 + CROSSHAIR_SIZE, width=2, color=CROSSHAIR_COLOR, batch=self.crosshair_batch)
-
 
         # Initialize menu
         self.menu_batch = pyglet.graphics.Batch()

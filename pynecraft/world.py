@@ -5,35 +5,21 @@ import multiprocessing
 import time
 from OpenGL.GL import *
 import utils
+from world_gen import generate_terrain, getRandom
 from chunk_builder import flatten_coord, to_uint8, is_empty, add_face, build_chunk
 
-def chunk_provider(chunkX, chunkZ, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, blocks=False, blocksOnly=False, neighbors=[[0, 0, 0], [0, 0, 0], [0, 0, 0]]):
+import random
+
+def chunk_provider(chunkX, chunkZ, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, seed, getRandom):
     import glm
-    from random import randint
     import numpy as np
+    from opensimplex.internals import _noise2, _noise3, _init
 
-    if blocks == False:
-        blocks = np.zeros(CHUNK_SIZE ** 2 * CHUNK_HEIGHT, dtype='uint8')
-        for x in range(CHUNK_SIZE):
-            for z in range(CHUNK_SIZE):
-                # 0.02 - Scale, higher = smaller hills in the xy direction (less fat)
-                # 8 - Amplitude, higher = taller hills, lower valleys
-                # 32 - Sea level
-                local_height = int(glm.simplex(glm.vec2(chunkX*CHUNK_SIZE + x, chunkZ*CHUNK_SIZE + z) * 0.02) * 8 + 64)
-                if local_height < 0:
-                    continue
-                for y in range(min(local_height, CHUNK_HEIGHT)):
-                    if local_height - y <= 1:
-                        blocks[flatten_coord(x, y, z)] = 2
-                    elif local_height - y <= 3:
-                        blocks[flatten_coord(x, y, z)] = 3
-                    else:
-                        blocks[flatten_coord(x, y, z)] = randint(4, 7)
+    perm, perm_grad_index3 = _init(seed)
 
-    if blocksOnly:
-        return chunkX, chunkZ, blocks, False
-    else:
-        return chunkX, chunkZ, blocks, build_chunk(chunkX, 0, chunkZ, blocks)
+    blocks = generate_terrain(CHUNK_SIZE, CHUNK_HEIGHT, chunkX, chunkZ, flatten_coord, np.zeros(CHUNK_SIZE ** 2 * CHUNK_HEIGHT, dtype='uint8'), perm, perm_grad_index3, _noise2, _noise3, getRandom)
+
+    return chunkX, chunkZ, blocks, build_chunk(chunkX, 0, chunkZ, blocks)
     
 
 class World:
@@ -89,9 +75,9 @@ class World:
                             def error(err):
                                 print(err)
 
-                            res = self.pool.apply_async(chunk_provider, (x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk), callback=call, error_callback=error)
+                            res = self.pool.apply_async(chunk_provider, (x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, WORLD_SEED, getRandom), callback=call, error_callback=error)
                         else:
-                            res = chunk_provider(x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk)
+                            res = chunk_provider(x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, WORLD_SEED, getRandom)
                             self.needs_building[(res[0], res[1])] = (res[2], res[3])
 
                 else:

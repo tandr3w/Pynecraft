@@ -52,7 +52,7 @@ def add_face(vertex_data, index, vertices):
 
 @njit
 def build_chunk(chunkX, chunkY, chunkZ, blocks):
-    vertex_data = np.empty(CHUNK_SIZE**2 * CHUNK_HEIGHT * 18 * 6, dtype="uint8")
+    vertex_data = np.empty(CHUNK_SIZE**2 * CHUNK_HEIGHT * 18 * 5, dtype="uint8")
     index = 0
 
     for x in range(CHUNK_SIZE):

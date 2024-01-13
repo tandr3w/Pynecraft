@@ -4,6 +4,8 @@ TPS = 40
 
 RENDER_DISTANCE = 8
 
+WORLD_SEED = 16
+
 # Camera Settings
 DEFAULT_FOV = 60
 NEAR = 0.1
