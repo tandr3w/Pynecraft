@@ -1,6 +1,4 @@
 # TODO:
-# More advanced terrain generation
-
 # Add installation instructions & requirements.txt
 # Convert images to resources - make it distributable
 # Comment and organize code
