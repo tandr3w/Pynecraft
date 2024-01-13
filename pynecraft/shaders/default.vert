@@ -14,7 +14,7 @@ flat out int faceid;
 flat out int blockid;
 out float shading;
 
-const float occ_vals[4] = float[4](0.2, 0.5, 0.8, 1.0);
+const float occ_vals[4] = float[4](0.1, 0.4, 0.7, 1.0);
 
 const vec2 coords[12] = vec2[12](
     vec2(1, 0), vec2(1, 1), vec2(0, 1), vec2(1, 0), vec2(0, 1), vec2(0, 0), // Top, Right, Back faces
