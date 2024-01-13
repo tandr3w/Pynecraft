@@ -32,23 +32,27 @@ def generate_terrain(CHUNK_SIZE, CHUNK_HEIGHT, chunkX, chunkZ, flatten_coord, bl
             if local_height < 0 or local_height > 128:
                 continue
 
-
+            
             for y in range(min(local_height, CHUNK_HEIGHT)):
-                if local_height - y >= 3:
-                    blocks[flatten_coord(x, y, z)] = 4
+                # Generate caves with 3d noise
+                if local_height - y >= random()*7 and _noise3((chunkX*CHUNK_SIZE + x)*0.08, y*0.08, (chunkZ*CHUNK_SIZE + z) * 0.08, perm, perm_grad_index3) > 0.25 and y > 0:
+                    blocks[flatten_coord(x, y, z)] = 0
                 else:
-                    random_height = local_height - random()*2
-                    if random_height <= 55:
-                        blocks[flatten_coord(x, y, z)] = 1
-                    elif random_height <= 56:
-                        blocks[flatten_coord(x, y, z)] = 3
-                    elif random_height <= 74:
-                        blocks[flatten_coord(x, y, z)] = 2
-                    elif random_height <= 75:
-                        blocks[flatten_coord(x, y, z)] = 3
-                    elif random_height <= 78:
+                    if local_height - y >= 3:
                         blocks[flatten_coord(x, y, z)] = 4
                     else:
-                        blocks[flatten_coord(x, y, z)] = 5
+                        random_height = local_height - random()*2
+                        if random_height <= 55:
+                            blocks[flatten_coord(x, y, z)] = 1
+                        elif random_height <= 56:
+                            blocks[flatten_coord(x, y, z)] = 3
+                        elif random_height <= 74:
+                            blocks[flatten_coord(x, y, z)] = 2
+                        elif random_height <= 75:
+                            blocks[flatten_coord(x, y, z)] = 3
+                        elif random_height <= 78:
+                            blocks[flatten_coord(x, y, z)] = 4
+                        else:
+                            blocks[flatten_coord(x, y, z)] = 5
 
     return blocks
