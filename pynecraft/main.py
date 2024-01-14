@@ -1,12 +1,9 @@
 # TODO:
-
 # Add installation instructions & requirements.txt, make it distributable
 # Comment and organize code
 
 # Swap the textures to not use that lame ass copied solution
 # Make sure you know how everything works
-
-# Fix camera bug
 
 import pyglet
 from pyglet.window import key
@@ -309,7 +306,6 @@ class Pynecraft(pyglet.window.Window):
 
             for i in range(128):
                 floatPos = [self.camera.position[0] + self.camera.forward[0] * 0.05 * i, self.camera.position[1] + self.camera.forward[1] * 0.05 * i, self.camera.position[2] + self.camera.forward[2] * 0.05 * i]
-                # print(currPos)
                 for j in range(3):
                     if floatPos[j] < 0:
                         currPos[j] = -ceil(-floatPos[j])
@@ -327,7 +323,7 @@ class Pynecraft(pyglet.window.Window):
                             for newPrev in adjacent:
                                 # Distance between two 3d points, add 0.5 to get center of block
                                 newDist = sqrt(abs(prevFloat[0]-(newPrev[0]+0.5))**2 + abs(prevFloat[1]-(newPrev[1]+0.5))**2 + abs(prevFloat[2]-(newPrev[2]+0.5))**2)
-                                if newDist < minDist:
+                                if newDist < minDist and not self.world.get_block(newPrev[0], newPrev[1], newPrev[2]):
                                     minDist = newDist
                                     prevBlock = newPrev
 

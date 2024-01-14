@@ -69,7 +69,7 @@ class Camera:
         if self.NOCLIP_ENABLED:
             return False
         x1 = position[0] - COLLISION_ZONE
-        y1 = position[1] - 2 + 2*COLLISION_ZONE
+        y1 = position[1] - 1.9 + 2*COLLISION_ZONE
         z1 = position[2] - COLLISION_ZONE
         X1 = position[0] + COLLISION_ZONE
         Y1 = position[1] + COLLISION_ZONE
@@ -113,7 +113,7 @@ class Camera:
 
     def move(self):
         velocity = self.speed * self.app.delta_time * 100
-        if not self.sneaking and key.LCTRL in self.app.held_keys and key.W in self.app.held_keys:
+        if key.LCTRL in self.app.held_keys and key.W in self.app.held_keys or (self.sprinting and key.W in self.app.held_keys):            
             velocity *= SPRINT_BOOST
             self.fovTransitionType = 1
             self.sprinting = True
@@ -188,7 +188,7 @@ class Camera:
         if self.GRAVITY_ENABLED and self.app.world.firstLoad and (self.position[0]//CHUNK_SIZE, self.position[2]//CHUNK_SIZE) in self.app.world.chunks:
             gravity_drop = self.GRAVITY_SPEED*self.curr_gravity_time*self.app.delta_time
             if self.jumping:
-                gravity_drop -= 6*self.app.delta_time
+                gravity_drop -= 5.6*self.app.delta_time
             self.curr_gravity_time += self.app.delta_time
             gravity_drop = min(gravity_drop, 0.9)
             gravity_drop = max(gravity_drop, -0.9)
