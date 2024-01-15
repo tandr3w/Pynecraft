@@ -1,5 +1,4 @@
 # TODO:
-# Comment and organize code
 # Swap the textures to not use that lame ass copied solution
 # Make sure you know how everything works
 
@@ -28,6 +27,9 @@ from chunk_builder import flatten_coord
 from math import ceil, sqrt
 
 class Pynecraft(pyglet.window.Window):
+    """
+    Class extending the Pyglet window object, including game initialization, GUIs, and keybinds.
+    """
     def update(self, dt):
         """
         self.delta_time represents the time in seconds that have passed since the previous frame.
