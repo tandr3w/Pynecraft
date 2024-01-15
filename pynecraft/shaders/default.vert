@@ -3,7 +3,6 @@
 layout (location=0) in ivec3 vertexPos;
 layout (location=1) in int block_type;
 layout (location=2) in int face_id;
-layout (location=3) in int occ_id;
 
 uniform mat4 m_proj;
 uniform mat4 m_view;

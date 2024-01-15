@@ -1,5 +1,4 @@
 # TODO:
-# Swap the textures to not use that lame ass copied solution
 # Make sure you know how everything works
 
 # For presentation, explain:
