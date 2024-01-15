@@ -8,7 +8,7 @@ An implementation of Minecraft using Pyglet and OpenGL (WIP)
 
 `pip install -r requirements.txt`
 
-`cd Pynecraft`
+`cd pynecraft`
 
 `python main.py`
 
