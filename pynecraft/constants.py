@@ -13,7 +13,7 @@ FAR = 1000
 SPEED = 0.03
 SENSITIVITY = 0.15
 COLLISION_ZONE = 0.2
-GRAVITY_SPEED = 13 # Blocks / Second^2; original mc uses 13
+GRAVITY_SPEED = 15 # Blocks / Second^2; original mc uses 13
 
 SPRINT_BOOST = 1.5
 CROSSHAIR_SIZE = 7
