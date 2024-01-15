@@ -4,11 +4,14 @@ import random
 
 @njit
 def getRandom():
+    # Only njit compiled functions can be passed as arguments, so this is necessary for use in generate_terrain
     return random.random()
 
 @njit
 def generate_terrain(CHUNK_SIZE, CHUNK_HEIGHT, chunkX, chunkZ, flatten_coord, blocks, perm, perm_grad_index3, _noise2, _noise3, random):
-    # https://www.redblobgames.com/maps/terrain-from-noise/
+    # Note that this function will be run inside of a subprocess without shared memory, so all functions and constants it uses must be passed in as arguments
+
+    # Inspired by https://www.redblobgames.com/maps/terrain-from-noise/
     for x in range(CHUNK_SIZE):
         for z in range(CHUNK_SIZE):
             amplitude = [20, 12, 6, 2] # higher = taller hills, lower valleys

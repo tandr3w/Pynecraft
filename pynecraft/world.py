@@ -4,7 +4,6 @@ from numba.typed import Dict
 import multiprocessing
 import time
 from OpenGL.GL import *
-import utils
 from world_gen import generate_terrain, getRandom
 from chunk_builder import flatten_coord, to_uint8, is_empty, add_face, build_chunk
 

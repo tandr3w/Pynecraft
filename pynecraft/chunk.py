@@ -1,6 +1,5 @@
 import numpy as np
 from constants import *
-import utils
 from chunk_builder import build_chunk
 from material import Material
 from OpenGL.GL import *

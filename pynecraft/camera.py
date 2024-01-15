@@ -3,7 +3,7 @@ import numpy as np
 from pyglet.window import key
 import glm
 from constants import *
-import utils
+from chunk_builder import flatten_coord
 from math import ceil
 
 class Camera:
@@ -94,7 +94,7 @@ class Camera:
                     blockZ = p[2] + zMod
                     chunkPos = (blockX // CHUNK_SIZE, blockY // CHUNK_HEIGHT, blockZ // CHUNK_SIZE)
                     if (chunkPos[0], chunkPos[2]) in self.app.world.chunks:
-                        if self.app.world.chunks[(chunkPos[0], chunkPos[2])].blocks[utils.flatten_coord(blockX % CHUNK_SIZE, blockY % CHUNK_HEIGHT, blockZ % CHUNK_SIZE)]:
+                        if self.app.world.chunks[(chunkPos[0], chunkPos[2])].blocks[flatten_coord(blockX % CHUNK_SIZE, blockY % CHUNK_HEIGHT, blockZ % CHUNK_SIZE)]:
                             # print((blockX, blockY, blockZ))
                             # Create bounding box for block
                             x2 = blockX

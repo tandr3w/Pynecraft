@@ -1,9 +1,16 @@
 # TODO:
-# Add installation instructions & requirements.txt, make it distributable
 # Comment and organize code
-
 # Swap the textures to not use that lame ass copied solution
 # Make sure you know how everything works
+
+# For presentation, explain:
+# What OpenGL works and a brief overview of how it works
+# How the camera / perspective works
+# How getting selected blocks / placing blocks works
+# How I store the world in chunks
+# Collision
+# Multiprocessing / numba
+# OOP
 
 import pyglet
 from pyglet.window import key
@@ -17,34 +24,37 @@ from shader import Shader
 from world import World
 from material import Material
 import constants
-import utils
+from chunk_builder import flatten_coord
 from math import ceil, sqrt
 
 class Pynecraft(pyglet.window.Window):
-
     def update(self, dt):
         self.delta_time = dt
 
     def __init__(self, win_size=(800, 600)):
+        # Create window
         super().__init__(width=win_size[0], height=win_size[1])
         self.WIN_SIZE = win_size
         self.delta_time = 0
 
+        # Update delta time TPS times per second.
+        pyglet.clock.schedule_interval(self.update, 1 / TPS)
+
+        # Initialize world & OpenGL objects
         self.camera = Camera(self)
         self.shader = Shader()
-
         self.world = World(self)
-        self.held_keys = set()
-        self.placingBlock = 1
-        self.exclusive = False
+        self.marker = BlockMarker(self)
 
+        self.placingBlock = 1 # Tracks the block that will be placed
+        self.exclusive = False # Tracks if the mouse is locked inside the window
+
+        # Variables for handling holding down the mouse to break/place blocks
+        self.held_keys = set()
         self.left_held = False
         self.right_held = False
-
         self.past_repeat = 0
         self.curr_repeat_time = 0
-
-        pyglet.clock.schedule_interval(self.update, 1 / TPS)
 
         # Intialize crosshair
         self.crosshair_batch = pyglet.graphics.Batch()
@@ -52,7 +62,7 @@ class Pynecraft(pyglet.window.Window):
         self.cross = pyglet.shapes.Line(self.WIN_SIZE[0]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, self.WIN_SIZE[0]//2 + CROSSHAIR_SIZE, self.WIN_SIZE[1] // 2, width=2, color=CROSSHAIR_COLOR, batch=self.crosshair_batch)
         self.cross2 = pyglet.shapes.Line(self.WIN_SIZE[0]//2, self.WIN_SIZE[1]//2 - CROSSHAIR_SIZE, self.WIN_SIZE[0]//2, self.WIN_SIZE[1] // 2 + CROSSHAIR_SIZE, width=2, color=CROSSHAIR_COLOR, batch=self.crosshair_batch)
 
-        # Initialize menu
+        # Initialize GUI elements
         self.menu_batch = pyglet.graphics.Batch()
         self.background = pyglet.graphics.Group(order=0)
         self.foreground = pyglet.graphics.Group(order=1)
@@ -178,16 +188,16 @@ class Pynecraft(pyglet.window.Window):
                 anchor_x='center', anchor_y='center')
             )
 
+        # For tracking the loading screen animation
         self.time_since_animation = 0
         self.animation_counter = 0
 
         # 0 = menu, 1 = loading / game, 2 = how to play
         self.screen_id = 0
 
-        # Must be loaded last since it changes OpenGL settings
+        # Initializes block textures. Must be loaded last since it changes OpenGL settings
         self.blockMaterial = Material("gfx/tex_array_1.png", isArr=True)
 
-        self.marker = BlockMarker(self)
         self.init_opengl()
 
     # Check if a pyglet element is clicked
@@ -196,6 +206,7 @@ class Pynecraft(pyglet.window.Window):
             return True
         return False
 
+    # Toggles locking the mouse inside of the game
     def set_exclusive(self, val=True):
         if val == True:
             super(Pynecraft, self).set_exclusive_mouse(False)
@@ -214,12 +225,12 @@ class Pynecraft(pyglet.window.Window):
     def break_selected_block(self):
         block = self.get_selected_block()
         if not block == None:
+            # Get the chunk position of the selected blocks
             chunkX = block[0] // CHUNK_SIZE
             chunkZ = block[2] // CHUNK_SIZE
-            if (chunkX, chunkZ) in self.world.chunks:
-                # print("Breaking!")
-                self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[0] % CHUNK_SIZE, block[1] % CHUNK_HEIGHT, block[2] % CHUNK_SIZE)] = 0
-                self.world.build_chunk(chunkX, chunkZ)
+            if (chunkX, chunkZ) in self.world.chunks: # Ensure chunk exists
+                self.world.chunks[(chunkX, chunkZ)].blocks[flatten_coord(block[0] % CHUNK_SIZE, block[1] % CHUNK_HEIGHT, block[2] % CHUNK_SIZE)] = 0 # Delete block
+                self.world.build_chunk(chunkX, chunkZ) # Rebuild chunk mesh to show in rendering
 
     def place_block(self):
         block = self.get_selected_block()
@@ -227,31 +238,35 @@ class Pynecraft(pyglet.window.Window):
             chunkX = block[3][0] // CHUNK_SIZE
             chunkZ = block[3][2] // CHUNK_SIZE
             if (chunkX, chunkZ) in self.world.chunks:
-                # Don't allow blocks to be placed on diagonals
-                # Possibly in the future, check which block placement is closer rather than not allowing placement at all
-                if block[3][1] < 255:
-                    self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = self.placingBlock
+                # Ensure block is within height limit, or overflow errors will occur
+                if block[3][1] < 255 and block[3][1] >= 0:
+                    self.world.chunks[(chunkX, chunkZ)].blocks[flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = self.placingBlock
+
+                    # Don't allow placing blocks that would collide with the current player
                     if self.camera.check_collision([self.camera.position[0], self.camera.position[1], self.camera.position[2]]):
-                        self.world.chunks[(chunkX, chunkZ)].blocks[utils.flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = 0
-                    self.world.build_chunk(chunkX, chunkZ) 
+                        self.world.chunks[(chunkX, chunkZ)].blocks[flatten_coord(block[3][0] % CHUNK_SIZE, block[3][1], block[3][2] % CHUNK_SIZE)] = 0
+
+                    self.world.build_chunk(chunkX, chunkZ) # Rebuild chunk mesh to show in rendering
 
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
 
+        # Menu screen
         if self.screen_id == 0:
-            # self.crosshair_batch.draw()
-            glDisable(GL_DEPTH_TEST)
+            glDisable(GL_DEPTH_TEST) # Depth testing must be disabled for menu items to render properly
             self.menu_batch.draw()
             self.play_btn_text.draw()
             self.controls_btn_text.draw()
             glEnable(GL_DEPTH_TEST)
 
+        # Game / loading screen
         elif self.screen_id == 1:
             if self.world.firstLoad:
                 glClearColor(0.52, 0.81, 0.92, 1)
                 self.set_exclusive()
             else:
+                # Loading screen
                 glDisable(GL_DEPTH_TEST)
                 self.loading_batch.draw()
                 self.loading_texts[self.animation_counter].draw()
@@ -265,6 +280,7 @@ class Pynecraft(pyglet.window.Window):
 
                 glEnable(GL_DEPTH_TEST)
 
+            # When mouse is held, automatically break/place blocks
             if self.left_held:
                 self.curr_repeat_time += self.delta_time
                 if (self.past_repeat < FIRST_REPEAT_DELAY and self.past_repeat + self.curr_repeat_time >= FIRST_REPEAT_DELAY ) or (self.past_repeat >= FIRST_REPEAT_DELAY and self.curr_repeat_time >= REPEAT_DELAY):
@@ -281,13 +297,20 @@ class Pynecraft(pyglet.window.Window):
 
             if self.world.firstLoad:
                 self.camera.update()
+
+            # Attempt to render all chunks in render distance
             self.world.render_chunks(self.camera.position, isAsync=True)
-            self.crosshair_batch.draw()
+
+            self.crosshair_batch.draw() # Draw crosshair
+
+            # Draw marker for the block you're looking at
             lookingAt = self.get_selected_block()
+
             if not lookingAt == None:
                 self.marker.position = np.array([int(lookingAt[0]), int(lookingAt[1]), int(lookingAt[2])])
                 self.marker.draw()
 
+        # Help menu
         elif self.screen_id == 2:
             glDisable(GL_DEPTH_TEST)
             for textline in self.help_texts:
@@ -296,7 +319,6 @@ class Pynecraft(pyglet.window.Window):
             self.back_btn_text.draw()
             glEnable(GL_DEPTH_TEST)
 
-
     def get_selected_block(self):
         if self.world.firstLoad:
             floatPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
@@ -304,8 +326,14 @@ class Pynecraft(pyglet.window.Window):
             prevBlock = None
             prevFloat = None
 
+            # Slowly increment the current position using the forward vector to create a pseudo "raycast".
+            # When a block is found, return that along with the position of the past empty space the ray intercepted,
+            # which is used for placing blocks.
             for i in range(128):
                 floatPos = [self.camera.position[0] + self.camera.forward[0] * 0.05 * i, self.camera.position[1] + self.camera.forward[1] * 0.05 * i, self.camera.position[2] + self.camera.forward[2] * 0.05 * i]
+
+                # Get positions of blocks
+                # Note that int() can't be used for negatives, as a block represented by (x, y, z) will go to (x+1, y+1, z+1)
                 for j in range(3):
                     if floatPos[j] < 0:
                         currPos[j] = -ceil(-floatPos[j])
@@ -314,7 +342,7 @@ class Pynecraft(pyglet.window.Window):
                 block = self.world.get_block(currPos[0], currPos[1], currPos[2])
                 if block:
                     if prevBlock:
-                        # Can't place diagonally -- find the closest center of an adjacent block to prevFloat
+                        # Can't place blocks diagonally - find the closest center of an adjacent block to prevFloat
                         if abs(prevBlock[0]-currPos[0]) + abs(prevBlock[2]-currPos[2]) + abs(prevBlock[1]-currPos[1]) != 1:
                             minDist = float("inf")
                             adjacent = [(currPos[0]+1, currPos[1], currPos[2]), (currPos[0]-1, currPos[1], currPos[2]),
@@ -335,6 +363,8 @@ class Pynecraft(pyglet.window.Window):
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
             self.close()
+
+        # Open help menu
         elif symbol == key.H:
             if self.screen_id == 2:
                 if self.world.firstLoad:
@@ -346,6 +376,7 @@ class Pynecraft(pyglet.window.Window):
                 self.screen_id = 2
                 self.set_exclusive(False)
 
+        # Keybinds
         if self.world.firstLoad:
             self.held_keys.add(symbol)
             if symbol == key.EQUAL:
