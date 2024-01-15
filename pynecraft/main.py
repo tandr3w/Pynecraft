@@ -29,6 +29,9 @@ from math import ceil, sqrt
 
 class Pynecraft(pyglet.window.Window):
     def update(self, dt):
+        """
+        self.delta_time represents the time in seconds that have passed since the previous frame.
+        """
         self.delta_time = dt
 
     def __init__(self, win_size=(800, 600)):
@@ -249,6 +252,9 @@ class Pynecraft(pyglet.window.Window):
                     self.world.build_chunk(chunkX, chunkZ) # Rebuild chunk mesh to show in rendering
 
     def on_draw(self):
+        """
+        Called each frame by Pyglet to get the display.
+        """
         glClear(GL_COLOR_BUFFER_BIT)
         glClear(GL_DEPTH_BUFFER_BIT)
 
@@ -320,6 +326,9 @@ class Pynecraft(pyglet.window.Window):
             glEnable(GL_DEPTH_TEST)
 
     def get_selected_block(self):
+        """
+        Finds block that the player is looking at
+        """
         if self.world.firstLoad:
             floatPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
             currPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
@@ -361,6 +370,9 @@ class Pynecraft(pyglet.window.Window):
                     prevFloat = (floatPos[0], floatPos[1], floatPos[2])
 
     def on_key_press(self, symbol, modifiers):
+        """
+        Pyglet event function.
+        """
         if symbol == key.ESCAPE:
             self.close()
 
@@ -405,15 +417,24 @@ class Pynecraft(pyglet.window.Window):
                     self.camera.GRAVITY_ENABLED = False
 
     def on_key_release(self, symbol, modifiers):
+        """
+        Pyglet event function.
+        """
         if self.world.firstLoad:
             self.held_keys.remove(symbol)
 
     def on_mouse_motion(self, x, y, dx, dy):
+        """
+        Pyglet event function.
+        """
         if self.exclusive and self.world.firstLoad:
             self.camera.rotate(-dx, dy)
             self.camera.update_camera_vectors()
 
     def on_mouse_press(self, x, y, button, modifiers):
+        """
+        Pyglet event function.
+        """
         if button == pyglet.window.mouse.LEFT:
             if self.screen_id == 0 and self.is_clicked(self.play_btn, x, y):
                 # Start game
@@ -439,6 +460,9 @@ class Pynecraft(pyglet.window.Window):
                 self.place_block()
 
     def on_mouse_release(self, x, y, button, modifiers):
+        """
+        Pyglet event function.
+        """
         if not self.world.firstLoad:
             return
         if button == pyglet.window.mouse.LEFT:

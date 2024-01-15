@@ -2,6 +2,10 @@ from constants import *
 import numpy as np
 from numba import njit, uint8
 
+"""
+Defines functions for building OpenGL vertices of chunks. Functions are JIT-compiled using numba for fast performance.
+"""
+
 @njit
 def flatten_coord(x, y, z):
     # Converts 3d coordinates into a single integer

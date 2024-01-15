@@ -2,10 +2,11 @@ from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram,compileShader
 
 class Shader():
+    """
+    Initializes and stores shader programs for each object type
+    """
     def __init__(self):
         self.shaders = {}
-
-        self.shaders["quad"] = self.get_shader("default")
         self.shaders["chunk"] = self.get_shader("default")
         self.shaders["marker"] = self.get_shader("marker")
 
