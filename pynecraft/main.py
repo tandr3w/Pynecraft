@@ -1,15 +1,3 @@
-# TODO:
-# Make sure you know how everything works
-
-# For presentation, explain:
-# What OpenGL works and a brief overview of how it works
-# How the camera / perspective works
-# How getting selected blocks / placing blocks works
-# How I store the world in chunks
-# Collision
-# Multiprocessing / numba
-# OOP
-
 import pyglet
 from pyglet.window import key
 from OpenGL.GL import *

@@ -239,7 +239,7 @@ class Camera:
 
     def get_projection_matrix(self):
         """
-        Transforms world coordinates to be in relation to the camera's perspective
+        Transforms vertices based on how the world should be visible on the screen
         """
         return pyrr.matrix44.create_perspective_projection(
             fovy = self.fov, aspect = self.aspect_ratio, 
@@ -248,7 +248,7 @@ class Camera:
 
     def get_view_matrix(self):
         """
-        Transforms coordinates of the camera's perspective to be in relation to the user's screen
+        Transforms vertices to be in the camera's point of view
         """
         if self.sneaking:
             self.position[1] -= 0.1
