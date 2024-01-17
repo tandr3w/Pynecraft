@@ -483,6 +483,9 @@ class Pynecraft(pyglet.window.Window):
             if self.screen_id == 0 and self.is_clicked(self.play_btn, x, y):
                 # Start game
                 self.screen_id = 1
+                self.camera.update_camera_vectors()
+                self.camera.view_matrix = self.camera.get_view_matrix()
+                self.camera.proj_matrix = self.camera.get_projection_matrix()
 
             elif self.screen_id == 0 and self.is_clicked(self.load_btn, x, y):
                 try:
@@ -524,8 +527,7 @@ class Pynecraft(pyglet.window.Window):
                     self.screen_id = 1
 
                 except Exception as e:
-                    print(e)
-                    print("World not found")
+                    print("Err: Saved world corrupted or not found")
 
 
             elif self.screen_id == 0 and self.is_clicked(self.controls_btn, x, y):
