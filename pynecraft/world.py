@@ -9,7 +9,7 @@ from chunk_builder import flatten_coord, to_uint8, is_empty, add_face, build_chu
 
 import random
 
-def chunk_provider(chunkX, chunkZ, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, seed, getRandom):
+def chunk_provider(chunkX, chunkZ, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, seed, getRandom, blocks=[]):
     """
     Function used for generating chunks inside of asynchronous subprocesses. Parameters must include all variables and functions used, as processes can't share memory in Python. 
     """
@@ -20,7 +20,8 @@ def chunk_provider(chunkX, chunkZ, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_u
     perm, perm_grad_index3 = _init(seed) # Variables used for Simplex noise
 
     # Generate block data for the current chunk
-    blocks = generate_terrain(CHUNK_SIZE, CHUNK_HEIGHT, chunkX, chunkZ, flatten_coord, np.zeros(CHUNK_SIZE ** 2 * CHUNK_HEIGHT, dtype='uint8'), perm, perm_grad_index3, _noise2, _noise3, getRandom)
+    if len(blocks) == 0:
+        blocks = generate_terrain(CHUNK_SIZE, CHUNK_HEIGHT, chunkX, chunkZ, flatten_coord, np.zeros(CHUNK_SIZE ** 2 * CHUNK_HEIGHT, dtype='uint8'), perm, perm_grad_index3, _noise2, _noise3, getRandom)        
 
     return chunkX, chunkZ, blocks, build_chunk(chunkX, 0, chunkZ, blocks) # Return block data and OpenGL vertex data
     
@@ -34,11 +35,13 @@ class World:
     def __init__(self, app):
         self.app = app
         self.chunks = {}
+        self.in_saved = {}
         self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-        self.numba_chunks = Dict() # Numba does not support Python dictionaries, so we must maintain a special synchronized Numba dictionary of chunks. 
         self.needs_building = {}
         self.gen_queue = set() # Chunks that are already being generated in subprocesses
         self.firstLoad = False # Represents whether any chunk has been generated yet
+
+        self.seed = random.randint(1, 10000) # Used for world generation
 
     def get_chunk(self, x, z):
         loc = (x, z)
@@ -50,7 +53,6 @@ class World:
         Can optionally pass in an array of blocks to avoid having to generate them.
         """
         self.chunks[(x, z)] = Chunk(self.app, position=[x*CHUNK_SIZE, 0, z*CHUNK_SIZE], blocks=blocks)
-        self.numba_chunks[(x, z)] = self.chunks[(x, z)].blocks
 
     def build_chunk(self, x, z, vertices=[]):
         """
@@ -96,11 +98,15 @@ class World:
                                 
                             def error(err):
                                 print(err)
-
-                            res = self.pool.apply_async(chunk_provider, (x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, WORLD_SEED, getRandom), callback=call, error_callback=error)
+                           
+                            # Chunk is in loaded world
+                            if (x, z) in self.in_saved:
+                                res = self.pool.apply_async(chunk_provider, (x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, self.seed, getRandom, self.in_saved[(x, z)]), callback=call, error_callback=error)
+                            else: # Generate new chunk
+                                res = self.pool.apply_async(chunk_provider, (x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, self.seed, getRandom), callback=call, error_callback=error)
                         else:
                             # Directly generate chunk data
-                            res = chunk_provider(x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, WORLD_SEED, getRandom)
+                            res = chunk_provider(x, z, CHUNK_SIZE, CHUNK_HEIGHT, flatten_coord, to_uint8, is_empty, add_face, build_chunk, generate_terrain, self.seed, getRandom)
                             self.needs_building[(res[0], res[1])] = (res[2], res[3])
 
                 else: # Chunk exists and is in the world already

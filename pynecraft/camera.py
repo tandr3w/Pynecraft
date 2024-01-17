@@ -7,7 +7,7 @@ from chunk_builder import flatten_coord
 from math import ceil
 
 class Camera:
-    def __init__(self, app, position=(0, 70, 0), yaw=0, pitch=0):
+    def __init__(self, app, position=(0, 90, 0), yaw=0, pitch=0):
         self.app = app
         self.aspect_ratio = app.WIN_SIZE[0] / app.WIN_SIZE[1]
 

@@ -1,11 +1,11 @@
+# CHANGING CHUNK SIZE OR CHUNK HEIGHT WILL BREAK THE WORLD LOADING
+
 CHUNK_SIZE = 16 # Each chunk will be a CHUNK_SIZE * CHUNK_SIZE square
 CHUNK_HEIGHT = 256
 
 TPS = 60
 
 RENDER_DISTANCE = 8 # The square of chunks from [currChunk - 8, currChunk+8] in the x and z directions will be rendered.
-
-WORLD_SEED = 17 # Used for world generation, change to get a new world
 
 # Camera Settings
 DEFAULT_FOV = 60

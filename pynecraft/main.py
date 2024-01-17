@@ -12,6 +12,7 @@ from material import Material
 import constants
 from chunk_builder import flatten_coord
 from math import ceil, sqrt
+import pyrr
 
 class Pynecraft(pyglet.window.Window):
     """
@@ -78,22 +79,60 @@ class Pynecraft(pyglet.window.Window):
         self.loading_bg = pyglet.sprite.Sprite(self.loading_bg_img, x=0, y=0, batch=self.loading_batch, group=self.background)
         self.loading_bg.update(scale=max(self.WIN_SIZE[0] / self.loading_bg.width, self.WIN_SIZE[1] / self.loading_bg.height))
 
-        self.controls_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-self.logo.height-225, batch=self.menu_batch, group=self.foreground)
+        self.load_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-self.logo.height-225, batch=self.menu_batch, group=self.foreground)
+        self.load_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.load_btn.width, scale_y=50/self.load_btn.height)
+
+        self.controls_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-self.logo.height-300, batch=self.menu_batch, group=self.foreground)
         self.controls_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.controls_btn.width, scale_y=50/self.controls_btn.height)
+
+        self.paused_batch = pyglet.graphics.Batch()
+
+        self.resume_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-300, batch=self.paused_batch, group=self.foreground)
+        self.resume_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.resume_btn.width, scale_y=50/self.resume_btn.height)
+
+        self.quit_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-375, batch=self.paused_batch, group=self.foreground)
+        self.quit_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.quit_btn.width, scale_y=50/self.quit_btn.height)
+
+        self.save_quit_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-450, batch=self.paused_batch, group=self.foreground)
+        self.save_quit_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.save_quit_btn.width, scale_y=50/self.save_quit_btn.height)
 
         pyglet.font.add_file('assets/minecraftia.ttf')
         pyglet.font.load('Minecraftia')
 
-        self.play_btn_text = pyglet.text.Label('Play',
+        self.play_btn_text = pyglet.text.Label('New Game',
             font_name='Minecraftia',
             font_size=16,
             x=self.WIN_SIZE[0]//2, y=self.play_btn.position[1] + 20,
+            anchor_x='center', anchor_y='center')
+
+        self.load_btn_text = pyglet.text.Label('Load Saved',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.load_btn.position[1] + 20,
             anchor_x='center', anchor_y='center')
 
         self.controls_btn_text = pyglet.text.Label('How To Play',
             font_name='Minecraftia',
             font_size=16,
             x=self.WIN_SIZE[0]//2, y=self.controls_btn.position[1] + 20,
+            anchor_x='center', anchor_y='center')
+
+        self.resume_btn_text = pyglet.text.Label('Resume',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.resume_btn.position[1] + 20,
+            anchor_x='center', anchor_y='center')
+
+        self.quit_btn_text = pyglet.text.Label('Quit Without Saving',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.quit_btn.position[1] + 20,
+            anchor_x='center', anchor_y='center')
+
+        self.save_quit_btn_text = pyglet.text.Label('Save and Quit',
+            font_name='Minecraftia',
+            font_size=16,
+            x=self.WIN_SIZE[0]//2, y=self.save_quit_btn.position[1] + 20,
             anchor_x='center', anchor_y='center')
 
         self.help_texts = [
@@ -187,6 +226,8 @@ class Pynecraft(pyglet.window.Window):
         # 0 = menu, 1 = loading / game, 2 = how to play
         self.screen_id = 0
 
+        self.paused = False
+
         # Initializes block textures. Must be loaded last since it changes OpenGL settings
         self.blockMaterial = Material("gfx/tex_array_1.png", isArr=True)
 
@@ -252,6 +293,7 @@ class Pynecraft(pyglet.window.Window):
             glDisable(GL_DEPTH_TEST) # Depth testing must be disabled for menu items to render properly
             self.menu_batch.draw()
             self.play_btn_text.draw()
+            self.load_btn_text.draw()
             self.controls_btn_text.draw()
             glEnable(GL_DEPTH_TEST)
 
@@ -259,7 +301,8 @@ class Pynecraft(pyglet.window.Window):
         elif self.screen_id == 1:
             if self.world.firstLoad:
                 glClearColor(0.52, 0.81, 0.92, 1)
-                self.set_exclusive()
+                if not self.paused:
+                    self.set_exclusive()
             else:
                 # Loading screen
                 glDisable(GL_DEPTH_TEST)
@@ -290,11 +333,19 @@ class Pynecraft(pyglet.window.Window):
                     self.past_repeat += self.curr_repeat_time
                     self.curr_repeat_time = 0
 
-            if self.world.firstLoad:
+            if self.world.firstLoad and not self.paused:
                 self.camera.update()
 
             # Attempt to render all chunks in render distance
             self.world.render_chunks(self.camera.position, isAsync=True)
+
+            glDisable(GL_DEPTH_TEST)
+            if self.paused:
+                self.paused_batch.draw()
+                self.resume_btn_text.draw()
+                self.quit_btn_text.draw()
+                self.save_quit_btn_text.draw()
+            glEnable(GL_DEPTH_TEST)
 
             self.crosshair_batch.draw() # Draw crosshair
 
@@ -318,7 +369,7 @@ class Pynecraft(pyglet.window.Window):
         """
         Finds block that the player is looking at
         """
-        if self.world.firstLoad:
+        if self.world.firstLoad and not self.paused:
             floatPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
             currPos = [self.camera.position[0], self.camera.position[1], self.camera.position[2]]
             prevBlock = None
@@ -363,10 +414,14 @@ class Pynecraft(pyglet.window.Window):
         Pyglet event function.
         """
         if symbol == key.ESCAPE:
-            self.close()
+            if self.screen_id == 1:
+                self.paused = not self.paused
+                self.set_exclusive(False)
+            else:
+                self.close()
 
         # Open help menu
-        elif symbol == key.H:
+        elif symbol == key.H and not self.paused:
             if self.screen_id == 2:
                 if self.world.firstLoad:
                     self.screen_id = 1
@@ -378,7 +433,7 @@ class Pynecraft(pyglet.window.Window):
                 self.set_exclusive(False)
 
         # Keybinds
-        if self.world.firstLoad:
+        if self.world.firstLoad and not self.paused:
             self.held_keys.add(symbol)
             if symbol == key.EQUAL:
                 self.camera.up_speed()
@@ -400,6 +455,7 @@ class Pynecraft(pyglet.window.Window):
                 self.placingBlock = 7
             elif symbol == key.G:
                 self.camera.GRAVITY_ENABLED = not self.camera.GRAVITY_ENABLED
+                self.camera.curr_gravity_time = 0
             elif symbol == key.N:
                 self.camera.NOCLIP_ENABLED = not self.camera.NOCLIP_ENABLED
                 if self.camera.NOCLIP_ENABLED:
@@ -410,13 +466,14 @@ class Pynecraft(pyglet.window.Window):
         Pyglet event function.
         """
         if self.world.firstLoad:
-            self.held_keys.remove(symbol)
+            if symbol in self.held_keys:
+                self.held_keys.remove(symbol)
 
     def on_mouse_motion(self, x, y, dx, dy):
         """
         Pyglet event function.
         """
-        if self.exclusive and self.world.firstLoad:
+        if self.exclusive and self.world.firstLoad and not self.paused:
             self.camera.rotate(-dx, dy)
             self.camera.update_camera_vectors()
 
@@ -429,6 +486,50 @@ class Pynecraft(pyglet.window.Window):
                 # Start game
                 self.screen_id = 1
 
+            elif self.screen_id == 0 and self.is_clicked(self.load_btn, x, y):
+                try:
+                    # Load saved game
+                    with open("save.txt", "r") as f:
+
+                        # Load player position and settings
+                        posX, posY, posZ = map(float, f.readline().split())
+                        camYaw, camPitch = map(float, f.readline().split())
+                        g_enabled, n_enabled = f.readline().split()
+                        self.camera.position = pyrr.vector3.create(x=posX, y=posY, z=posZ, dtype=np.float32)
+                        self.camera.yaw = camYaw
+                        self.camera.pitch = camPitch
+                        if g_enabled == "True":
+                            g_enabled = True
+                        else:
+                            g_enabled = False
+                        if n_enabled == "True":
+                            n_enabled = True
+                        else:
+                            n_enabled = False
+
+                        self.camera.GRAVITY_ENABLED = g_enabled
+                        self.camera.NOCLIP_ENABLED = n_enabled
+                        self.camera.update_camera_vectors()
+                        self.camera.view_matrix = self.camera.get_view_matrix()
+                        self.camera.proj_matrix = self.camera.get_projection_matrix()
+
+                        # Load chunks
+                        while True:
+                            nextLine = f.readline()
+                            if nextLine == "END": # End of file
+                                break
+                            else:
+                                loadChunkX, loadChunkZ = map(int, nextLine.split())
+                                loadBlocks = list(map(int, f.readline().split()))
+                                self.world.in_saved[(loadChunkX, loadChunkZ)] = np.array(loadBlocks, dtype="uint8")
+
+                    self.screen_id = 1
+
+                except Exception as e:
+                    print(e)
+                    print("World not found")
+
+
             elif self.screen_id == 0 and self.is_clicked(self.controls_btn, x, y):
                 self.screen_id = 2
             
@@ -438,12 +539,38 @@ class Pynecraft(pyglet.window.Window):
                 else:
                     self.screen_id = 0
 
-            if self.world.firstLoad:
+            if self.paused and self.is_clicked(self.resume_btn, x, y):
+                self.paused = False
+                self.set_exclusive(True)
+
+            if self.paused and self.is_clicked(self.quit_btn, x, y):
+                self.close()
+
+            if self.paused and self.is_clicked(self.save_quit_btn, x, y):
+                with open("save.txt", "w+") as f:
+                    # Save player position and settings
+                    f.write(" ".join([str(i) for i in self.camera.position]))
+                    f.write("\n")
+                    f.write(" ".join([str(self.camera.yaw), str(self.camera.pitch)]))
+                    f.write("\n")
+                    f.write(" ".join([str(self.camera.GRAVITY_ENABLED), str(self.camera.NOCLIP_ENABLED)]))
+                    f.write("\n")
+
+                    # Save chunks
+                    for chunkKey in self.world.chunks:
+                        f.write(" ".join([str(i) for i in chunkKey]))
+                        f.write("\n")
+                        f.write(" ".join([str(i) for i in self.world.chunks[chunkKey].blocks]))
+                        f.write("\n")
+                    f.write("END") # Marks the end of the file
+                self.close()
+
+            if self.world.firstLoad and not self.paused:
                 self.set_exclusive()
                 self.left_held = True
                 self.break_selected_block()
 
-        elif button == pyglet.window.mouse.RIGHT and self.exclusive:
+        elif button == pyglet.window.mouse.RIGHT and self.exclusive and not self.paused:
             if self.world.firstLoad:
                 self.right_held = True
                 self.place_block()
@@ -464,7 +591,6 @@ class Pynecraft(pyglet.window.Window):
             self.past_repeat = 0
         
         self.curr_repeat_time = 0
-
 
 if __name__ == '__main__':
     window = Pynecraft()

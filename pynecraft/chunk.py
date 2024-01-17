@@ -89,7 +89,6 @@ class Chunk:
 
         glDrawArrays(GL_TRIANGLES, 0, self.vertex_count)
 
-
 class BlockMarker:
     def __init__(self, app):
         self.app = app
