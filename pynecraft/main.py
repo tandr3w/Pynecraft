@@ -539,14 +539,14 @@ class Pynecraft(pyglet.window.Window):
                 else:
                     self.screen_id = 0
 
-            if self.paused and self.is_clicked(self.resume_btn, x, y):
+            elif self.paused and self.is_clicked(self.resume_btn, x, y):
                 self.paused = False
                 self.set_exclusive(True)
 
-            if self.paused and self.is_clicked(self.quit_btn, x, y):
+            elif self.paused and self.is_clicked(self.quit_btn, x, y):
                 self.close()
 
-            if self.paused and self.is_clicked(self.save_quit_btn, x, y):
+            elif self.paused and self.is_clicked(self.save_quit_btn, x, y):
                 with open("save.txt", "w+") as f:
                     # Save player position and settings
                     f.write(" ".join([str(i) for i in self.camera.position]))
@@ -565,7 +565,7 @@ class Pynecraft(pyglet.window.Window):
                     f.write("END") # Marks the end of the file
                 self.close()
 
-            if self.world.firstLoad and not self.paused:
+            elif self.world.firstLoad and not self.paused:
                 self.set_exclusive()
                 self.left_held = True
                 self.break_selected_block()
