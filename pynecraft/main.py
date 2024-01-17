@@ -87,13 +87,13 @@ class Pynecraft(pyglet.window.Window):
 
         self.paused_batch = pyglet.graphics.Batch()
 
-        self.resume_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-300, batch=self.paused_batch, group=self.foreground)
+        self.resume_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-250, batch=self.paused_batch, group=self.foreground)
         self.resume_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.resume_btn.width, scale_y=50/self.resume_btn.height)
 
-        self.quit_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-375, batch=self.paused_batch, group=self.foreground)
+        self.quit_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-325, batch=self.paused_batch, group=self.foreground)
         self.quit_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.quit_btn.width, scale_y=50/self.quit_btn.height)
 
-        self.save_quit_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-450, batch=self.paused_batch, group=self.foreground)
+        self.save_quit_btn = pyglet.sprite.Sprite(self.play_btn_img, x=2*self.WIN_SIZE[0]/10, y=self.WIN_SIZE[1]-400, batch=self.paused_batch, group=self.foreground)
         self.save_quit_btn.update(scale_x=(6*self.WIN_SIZE[0]/10) / self.save_quit_btn.width, scale_y=50/self.save_quit_btn.height)
 
         pyglet.font.add_file('assets/minecraftia.ttf')
@@ -417,8 +417,6 @@ class Pynecraft(pyglet.window.Window):
             if self.screen_id == 1:
                 self.paused = not self.paused
                 self.set_exclusive(False)
-            else:
-                self.close()
 
         # Open help menu
         elif symbol == key.H and not self.paused:
