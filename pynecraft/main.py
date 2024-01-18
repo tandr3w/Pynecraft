@@ -1,3 +1,5 @@
+# Store seed in save
+
 import pyglet
 from pyglet.window import key
 from OpenGL.GL import *
@@ -495,7 +497,13 @@ class Pynecraft(pyglet.window.Window):
                         # Load player position and settings
                         posX, posY, posZ = map(float, f.readline().split())
                         camYaw, camPitch = map(float, f.readline().split())
+
+
                         g_enabled, n_enabled = f.readline().split()
+
+                        loadedSeed = int(f.readline())
+                        self.world.seed = loadedSeed
+
                         self.camera.position = pyrr.vector3.create(x=posX, y=posY, z=posZ, dtype=np.float32)
                         self.camera.yaw = camYaw
                         self.camera.pitch = camPitch
@@ -527,6 +535,7 @@ class Pynecraft(pyglet.window.Window):
                     self.screen_id = 1
 
                 except Exception as e:
+                    print(e)
                     print("Err: Saved world corrupted or not found")
 
 
@@ -555,13 +564,10 @@ class Pynecraft(pyglet.window.Window):
                     f.write("\n")
                     f.write(" ".join([str(self.camera.GRAVITY_ENABLED), str(self.camera.NOCLIP_ENABLED)]))
                     f.write("\n")
-
+                    f.write(str(self.world.seed))
+                    f.write("\n")
                     # Save chunks
-                    for chunkKey in self.world.chunks:
-                        f.write(" ".join([str(i) for i in chunkKey]))
-                        f.write("\n")
-                        f.write(" ".join([str(i) for i in self.world.chunks[chunkKey].blocks]))
-                        f.write("\n")
+                    f.write("".join([" ".join([str(i) for i in chunkKey]) + "\n" + " ".join([str(i) for i in self.world.chunks[chunkKey].blocks]) + "\n" for chunkKey in self.world.chunks]))
                     f.write("END") # Marks the end of the file
                 self.close()
 
