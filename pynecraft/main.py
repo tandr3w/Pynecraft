@@ -1,5 +1,3 @@
-# Store seed in save
-
 import pyglet
 from pyglet.window import key
 from OpenGL.GL import *
@@ -497,7 +495,6 @@ class Pynecraft(pyglet.window.Window):
                         # Load player position and settings
                         posX, posY, posZ = map(float, f.readline().split())
                         camYaw, camPitch = map(float, f.readline().split())
-
 
                         g_enabled, n_enabled = f.readline().split()
 
