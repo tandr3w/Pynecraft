@@ -1,5 +1,5 @@
 # Pynecraft
-An implementation of Minecraft using Pyglet and OpenGL (WIP)
+An implementation of Minecraft using Pyglet and OpenGL.
 
 # Installation & Usage
 `git clone https://github.com/tandr3w/Pynecraft.git`
